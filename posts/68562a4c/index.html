@@ -1,0 +1,199 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>k8s基础概念 | 二博</title><meta name="description" content="概述官方中文文档 简介 Kubernetes是一个开源的，用于管理云平台中多个主机上的容器化的应用，Kubernetes的目标是让部署容器化的应用简单并且高效（powerful）,Kubernetes提供了应用部署，规划，更新，维护的一种机制。 Kubernetes一个核心的特点就是能够自主的管理容器来保证云平台中的容器按照用户的期望状态运行着（比如用户想让apache一直运行，用户不需要关心怎么"><meta name="keywords" content="k8s,Kubernetes"><meta name="author" content="二博"><meta name="copyright" content="二博"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/img/favicon.ico"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="dns-prefetch" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="crossorigin"/><link rel="dns-prefetch" href="https://fonts.googleapis.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="dns-prefetch" href="//busuanzi.ibruce.info"/><meta name="twitter:card" content="summary"><meta name="twitter:title" content="k8s基础概念"><meta name="twitter:description" content="概述官方中文文档 简介 Kubernetes是一个开源的，用于管理云平台中多个主机上的容器化的应用，Kubernetes的目标是让部署容器化的应用简单并且高效（powerful）,Kubernetes提供了应用部署，规划，更新，维护的一种机制。 Kubernetes一个核心的特点就是能够自主的管理容器来保证云平台中的容器按照用户的期望状态运行着（比如用户想让apache一直运行，用户不需要关心怎么"><meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/cover/wallpaper-3032044.jpg"><meta property="og:type" content="article"><meta property="og:title" content="k8s基础概念"><meta property="og:url" content="https://chobon8.github.io/posts/68562a4c/"><meta property="og:site_name" content="二博"><meta property="og:description" content="概述官方中文文档 简介 Kubernetes是一个开源的，用于管理云平台中多个主机上的容器化的应用，Kubernetes的目标是让部署容器化的应用简单并且高效（powerful）,Kubernetes提供了应用部署，规划，更新，维护的一种机制。 Kubernetes一个核心的特点就是能够自主的管理容器来保证云平台中的容器按照用户的期望状态运行着（比如用户想让apache一直运行，用户不需要关心怎么"><meta property="og:image" content="https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/cover/wallpaper-3032044.jpg"><meta property="article:published_time" content="2020-06-19T09:04:58.000Z"><meta property="article:modified_time" content="2020-06-22T08:03:47.394Z"><script src="https://cdn.jsdelivr.net/npm/js-cookie/dist/js.cookie.min.js"></script><script>var autoChangeMode = '1'
+var t = Cookies.get("theme")
+if (autoChangeMode == '1'){
+  var isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+  var isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches
+  var isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined){
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport){
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour < 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+  }
+  } else if (t == 'light') activateLightMode()
+  else activateDarkMode()
+
+} else if (autoChangeMode == '2'){
+  now = new Date();
+  hour = now.getHours();
+  isNight = hour < 6 || hour >= 18
+  if(t === undefined) isNight? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode() 
+} else {
+  if ( t == 'dark' ) activateDarkMode()
+  else if ( t == 'light') activateLightMode()
+}
+
+function activateDarkMode(){
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+    document.querySelector('meta[name="theme-color"]').setAttribute('content','#000')
+  }
+}
+function activateLightMode(){
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null){
+  document.querySelector('meta[name="theme-color"]').setAttribute('content','#fff')
+  }
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@latest/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="canonical" href="https://chobon8.github.io/posts/68562a4c/"><link rel="next" title="k8s和k3s常用命令笔记" href="https://chobon8.github.io/posts/e8f50adc/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"cookieDomain":"https://chobon8.github.io/","msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: undefined,
+  ClickShowText: undefined,
+  medium_zoom: true,
+  fancybox: true,
+  Snackbar: undefined,
+  baiduPush: false,
+  highlightCopy: true,
+  highlightLang: true,
+  highlightShrink: 'false',
+  isFontAwesomeV5: false,
+  isPhotoFigcaption: true,
+  islazyload: true,
+  isanchor: false
+  
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isSidebar: true  
+  }</script><noscript><style>
+#page-header {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><meta name="generator" content="Hexo 4.2.0"></head><body><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">49</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">43</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">15</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-list" aria-hidden="true"></i><span> 更多</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fa fa-film"></i><span> 电影</span></a></li><li><a class="site-page" href="/gallery/"><i class="fa-fw fa fa-photo"></i><span> 相册</span></a></li></ul></div></div></div></div><i class="fa fa-arrow-right on" id="toggle-sidebar" aria-hidden="true">     </i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#概述"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#简介"><span class="toc-number">1.1.</span> <span class="toc-text">简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kubernetes组成"><span class="toc-number">1.2.</span> <span class="toc-text">Kubernetes组成</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#集群-Cluster"><span class="toc-number">2.</span> <span class="toc-text">集群(Cluster)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Kubernetes集群"><span class="toc-number">2.1.</span> <span class="toc-text">Kubernetes集群</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kubernetes集群最小工作单位Pod"><span class="toc-number">2.2.</span> <span class="toc-text">Kubernetes集群最小工作单位Pod</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#kubernets引入pod主要基于下面两个目的"><span class="toc-number">2.2.1.</span> <span class="toc-text">kubernets引入pod主要基于下面两个目的</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Pod有两种使用方式"><span class="toc-number">2.2.2.</span> <span class="toc-text">Pod有两种使用方式</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#控制器-Controller"><span class="toc-number">3.</span> <span class="toc-text">控制器(Controller)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ReplicaSet"><span class="toc-number">3.1.</span> <span class="toc-text">ReplicaSet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ReplicationController"><span class="toc-number">3.2.</span> <span class="toc-text">ReplicationController</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Deployments"><span class="toc-number">3.3.</span> <span class="toc-text">Deployments</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DaemonSet"><span class="toc-number">3.4.</span> <span class="toc-text">DaemonSet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#StatefulSets"><span class="toc-number">3.5.</span> <span class="toc-text">StatefulSets</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Job"><span class="toc-number">3.6.</span> <span class="toc-text">Job</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#CronbJob"><span class="toc-number">3.6.1.</span> <span class="toc-text">CronbJob</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#存储-Storage"><span class="toc-number">4.</span> <span class="toc-text">存储(Storage)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Volumes"><span class="toc-number">4.1.</span> <span class="toc-text">Volumes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Persistent-Volumes"><span class="toc-number">4.2.</span> <span class="toc-text">Persistent Volumes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Storage-Class"><span class="toc-number">4.3.</span> <span class="toc-text">Storage Class</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#网络和负载均衡"><span class="toc-number">5.</span> <span class="toc-text">网络和负载均衡</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Service"><span class="toc-number">5.1.</span> <span class="toc-text">Service</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Ingress"><span class="toc-number">5.2.</span> <span class="toc-text">Ingress</span></a></li></ol></li></ol></div></div></div><div id="body-wrap"><div class="post-bg" id="nav" style="background-image: url(https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/cover/wallpaper-3032044.jpg)"><div id="page-header"><span class="pull_left" id="blog_name"><a class="blog_title" id="site-name" href="/">二博</a></span><span class="pull_right menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fa fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fa fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fa fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fa fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fa fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page"><i class="fa-fw fa fa-list" aria-hidden="true"></i><span> 更多</span><i class="fa fa-chevron-down menus-expand" aria-hidden="true"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fa fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fa fa-film"></i><span> 电影</span></a></li><li><a class="site-page" href="/gallery/"><i class="fa-fw fa fa-photo"></i><span> 相册</span></a></li></ul></div></div><span class="toggle-menu close"><a class="site-page"><i class="fa fa-bars fa-fw" aria-hidden="true"></i></a></span></span></div><div id="post-info"><div id="post-title"><div class="posttitle">k8s基础概念</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2020-06-19 17:04:58"><i class="fa fa-calendar" aria-hidden="true"></i> 发表于 2020-06-19</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2020-06-22 16:03:47"><i class="fa fa-history" aria-hidden="true"></i> 更新于 2020-06-22</span></time></div><div class="meta-secondline"> <span class="post-meta-wordcount"><i class="post-meta__icon fa fa-file-word-o" aria-hidden="true"></i><span>字数总计:</span><span class="word-count">1.8k</span><span class="post-meta__separator">|</span><i class="post-meta__icon fa fa-clock-o" aria-hidden="true"></i><span>阅读时长: 5 分钟</span></span></div><div class="meta-thirdline"><span class="post-meta-pv-cv"><span class="post-meta__separator">|</span><i class="fa fa-eye post-meta__icon" aria-hidden="true"> </i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"><span class="post-meta__separator">|</span><i class="post-meta__icon fa fa-comment-o" aria-hidden="true"></i><span>评论数:</span><a href="/posts/68562a4c/#post-comment" itemprop="discussionUrl"><span class="valine-comment-count comment-count" data-xid="/posts/68562a4c/" itemprop="commentCount"></span></a></span></div></div></div></div><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a><strong>概述</strong></h2><p><a href="https://www.kubernetes.org.cn/docs" target="_blank" rel="noopener"><strong>官方中文文档</strong></a></p>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a><strong>简介</strong></h3><ul>
+<li>Kubernetes是一个开源的，用于管理云平台中多个主机上的容器化的应用，Kubernetes的目标是让部署容器化的应用简单并且高效（powerful）,Kubernetes提供了应用部署，规划，更新，维护的一种机制。</li>
+<li>Kubernetes一个核心的特点就是能够自主的管理容器来保证云平台中的容器按照用户的期望状态运行着（比如用户想让apache一直运行，用户不需要关心怎么去做，Kubernetes会自动去监控，然后去重启，新建，总之，让apache一直提供服务），管理员可以加载一个微型服务，让规划器来找到合适的位置，同时，Kubernetes也系统提升工具以及人性化方面，让用户能够方便的部署自己的应用。</li>
+</ul>
+<h3 id="Kubernetes组成"><a href="#Kubernetes组成" class="headerlink" title="Kubernetes组成"></a>Kubernetes组成</h3><ul>
+<li>Kubernetes节点有运行应用容器必备的服务，而这些都是受Master的控制。</li>
+<li>每个节点上都要运行容器（Docker）。容器来负责所有具体的映像下载和容器运行。</li>
+<li>Kubernetes主要由以下几个核心组件组成：<ul>
+<li><strong><code>etcd</code></strong> 保存了整个集群的状态</li>
+<li><strong><code>apiserver</code></strong> 提供了资源操作的唯一入口，并提供认证、授权、访问控制、API注册和发现等机制</li>
+<li><strong><code>controller manager</code></strong> 负责维护集群的状态，比如故障检测、自动扩展、滚动更新等</li>
+<li><strong><code>scheduler</code></strong> 负责资源的调度，按照预定的调度策略将Pod调度到相应的机器上</li>
+<li><strong><code>kubelet</code></strong> 负责维护容器的生命周期，同时也负责Volume（CVI）和网络（CNI）的管理</li>
+<li><strong><code>container runtime</code></strong> 负责镜像管理以及Pod和容器的真正运行（CRI）</li>
+<li><strong><code>kube-proxy</code></strong> 负责为Service提供cluster内部的服务发现和负载均衡</li>
+</ul>
+</li>
+<li>除了核心组件，还有一些推荐的Add-ons：<ul>
+<li>kube-dns负责为整个集群提供DNS服务</li>
+<li>Ingress Controller为服务提供外网入口</li>
+<li>Heapster提供资源监控</li>
+<li>Dashboard提供GUI</li>
+<li>Federation提供跨可用区的集群</li>
+<li>Fluentd-elasticsearch提供集群日志采集、存储与查询</li>
+</ul>
+</li>
+</ul>
+<h2 id="集群-Cluster"><a href="#集群-Cluster" class="headerlink" title="集群(Cluster)"></a>集群(Cluster)</h2><h3 id="Kubernetes集群"><a href="#Kubernetes集群" class="headerlink" title="Kubernetes集群"></a>Kubernetes集群</h3><ul>
+<li>Master<ul>
+<li>master是指集群控制节点，来负责整个集群的管理和控制，基本上k8s的所有控制命令都是发给它。执行的命令基本都是在master节点上运行。通常它会占据一个独立的服务器（虚拟机）</li>
+<li>master节点上运行的一些关键进程：<ul>
+<li>kube-apiserver <em><code>(k8s API server)</code></em></li>
+<li>kube-controller-manager</li>
+<li>kube-scheduler</li>
+<li>etcd server</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Node<ul>
+<li>k8s集群中其他机器被称为node节点，Node可以是一台物理机，也可以是一台虚拟机。当某个node宕机，其上的工作负载会被master自动转移到其他节点上。</li>
+<li>node节点上运行的一些关键进程：<ul>
+<li>kubelet</li>
+<li>kube-proxy</li>
+<li>容器引擎（docker engine、containerd）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="Kubernetes集群最小工作单位Pod"><a href="#Kubernetes集群最小工作单位Pod" class="headerlink" title="Kubernetes集群最小工作单位Pod"></a>Kubernetes集群最小工作单位Pod</h3><p>Pod是kubernets的最小工作单元。每个pod包含一个或多个容器。pod中的容器会做为一个整体被master调度到一个node上运行。</p>
+<h4 id="kubernets引入pod主要基于下面两个目的"><a href="#kubernets引入pod主要基于下面两个目的" class="headerlink" title="kubernets引入pod主要基于下面两个目的"></a>kubernets引入pod主要基于下面两个目的</h4><ol>
+<li><p>可管理性<br>有些容器天生就是需要紧密联系，一起工作。Pod提供了比容器更高层次的抽象，将它们封装到一个部署单元中。Kubernetes以Pod为最小单元进行调度、扩展、资源共享、管理生命周期。</p>
+</li>
+<li><p>通信和资源共享<br>Pod中所有容器使用同一个网络namespace，即相同的IP地址和Port空间。它们可以直接使用localhost进行通信。同样的，这些容器可以共享存储，当kubernets挂在volume到pod，本质上是将volume挂在到pod中的每一个容器。</p>
+</li>
+</ol>
+<h4 id="Pod有两种使用方式"><a href="#Pod有两种使用方式" class="headerlink" title="Pod有两种使用方式"></a>Pod有两种使用方式</h4><ol>
+<li><p>运行单一容器<br>one-container-per-Pod 是 Kubernetes 最常见的模型，这种情况下，只是将单个容器简单封装成 Pod。即便是只有一个容器，Kubernetes 管理的也是 Pod 而不是直接管理容器</p>
+</li>
+<li><p>运行多个容器  </p>
+</li>
+</ol>
+<h2 id="控制器-Controller"><a href="#控制器-Controller" class="headerlink" title="控制器(Controller)"></a>控制器(Controller)</h2><h3 id="ReplicaSet"><a href="#ReplicaSet" class="headerlink" title="ReplicaSet"></a>ReplicaSet</h3><p>ReplicaSet 确保任何时间都有指定数量的 Pod 副本在运行。ReplicaSet 是下一代的 Replication Controller。</p>
+<h3 id="ReplicationController"><a href="#ReplicationController" class="headerlink" title="ReplicationController"></a>ReplicationController</h3><p>ReplicationController 确保任何时候都有特定数量的Pod副本处于运行状态，新版本推荐ReplicaSet来代替</p>
+<h3 id="Deployments"><a href="#Deployments" class="headerlink" title="Deployments"></a>Deployments</h3><p>Deployment 是一个更高级的概念，它管理 ReplicaSet，并向 Pod 提供声明式的更新以及许多其他有用的功能。 </p>
+<h3 id="DaemonSet"><a href="#DaemonSet" class="headerlink" title="DaemonSet"></a>DaemonSet</h3><p>在每个节点上运行一个Pod，对于管理那些提供主机级别功能（如主机监控和主机日志）的容器</p>
+<h3 id="StatefulSets"><a href="#StatefulSets" class="headerlink" title="StatefulSets"></a>StatefulSets</h3><p>有状态的Pod</p>
+<h3 id="Job"><a href="#Job" class="headerlink" title="Job"></a>Job</h3><p>自行终止的Pod，执行一次</p>
+<h4 id="CronbJob"><a href="#CronbJob" class="headerlink" title="CronbJob"></a>CronbJob</h4><p>基于时间调度的Jobs。一个 CronJob 对象就像 crontab (cron table) 文件中的一行。它用 Cron 格式进行编写，并周期性地在给定的调度时间执行 Job。</p>
+<h2 id="存储-Storage"><a href="#存储-Storage" class="headerlink" title="存储(Storage)"></a>存储(Storage)</h2><h3 id="Volumes"><a href="#Volumes" class="headerlink" title="Volumes"></a>Volumes</h3><p>Volume是Pod中能够被多个容器访问的共同目录。也就是被定义在Pod上，然后被一个Pod中的多个容器挂载到具体的文件目录下，其次，vVolume与Pod生命周期相同，但与容器生命周期不相关，当容器终止或重启，Volume中的数据也不会丢失。</p>
+<h3 id="Persistent-Volumes"><a href="#Persistent-Volumes" class="headerlink" title="Persistent Volumes"></a>Persistent Volumes</h3><p>Persistent Volumes 是已经由管理员提供或者动态使用供应的集群中的一块存储的Storage Class。创建PersistentVolumes，绑定StorageClass，再由PersistentVolumesClaims使用。</p>
+<h3 id="Storage-Class"><a href="#Storage-Class" class="headerlink" title="Storage Class"></a>Storage Class</h3><p>定义存储的类型，不同的类型可能会映射到不同的的服务质量等级或备份策略，或是由集群管理员制定的任意策略。动态卷供应首先需要定义不同的Storage Class对象，当动态供应被调用时，根据Storage Class对象设置的参数，哪些持久卷将被使用。</p>
+<h2 id="网络和负载均衡"><a href="#网络和负载均衡" class="headerlink" title="网络和负载均衡"></a>网络和负载均衡</h2><h3 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h3><p>Service 为Pods提供自己的IP地址和一组Pod的单个DNS名称，并且可以在它们之间进行负载平衡，可以提供外界对Pod访问的接口</p>
+<p>暴露方式分三种</p>
+<ol>
+<li>ExternalName<br>通过返回 CNAME 和它的值，可以将服务映射到 externalName 字段的内容（例如， foo.bar.example.com）。 没有任何类型代理被创建。</li>
+<li>ClusterIP<br>通过集群的内部 IP 暴露服务，选择该值，服务只能够在集群内部可以访问，这也是默认的 ServiceType。</li>
+<li>NodePort<br>通过每个 Node 上的 IP 和静态端口（<code>NodePort</code>）暴露服务。<code>NodePort</code> 服务会路由到 <code>ClusterIP</code> 服务，这个 ClusterIP 服务会自动创建。通过请求 <code>&lt;NodeIP&gt;:&lt;NodePort&gt;</code>，可以从集群的外部访问一个 <code>NodePort</code> 服务。</li>
+<li>LoadBalancer<br>使用云提供商的负载局衡器，可以向外部暴露服务。外部的负载均衡器可以路由到 <code>NodePort</code> 服务和 <code>ClusterIP</code> 服务。</li>
+<li><strong><em>HostPort</em></strong><br>这种比较特殊，在Pod里面配置Ports里配置HostPort。暴露Pod运行的主机端口，供外部访问，如：1.2.3.4:30000</li>
+</ol>
+<h3 id="Ingress"><a href="#Ingress" class="headerlink" title="Ingress"></a>Ingress</h3><p>Ingress 可以提供负载均衡、SSL 终结和基于名称的虚拟托管。通过Ingress连接Service，对外部提供更丰富的访问方式</p>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">二博</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://chobon8.github.io/posts/68562a4c/">https://chobon8.github.io/posts/68562a4c/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://chobon8.github.io" target="_blank">二博</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/k8s/">k8s</a><a class="post-meta__tags" href="/tags/Kubernetes/">Kubernetes</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/cover/wallpaper-3032044.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><div class="post-reward"><a class="reward-button button--primary button--animated"> <i class="fa fa-qrcode"></i> 打赏<div class="reward-main"><ul class="reward-all"><li class="reward-item"><img class="post-qr-code__img" src="https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/img/wechat.png" alt="微信"/><div class="post-qr-code__desc">微信</div></li><li class="reward-item"><img class="post-qr-code__img" src="https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/img/alipay.jpg" alt="支付宝"/><div class="post-qr-code__desc">支付宝</div></li></ul></div></a></div><nav class="pagination_post" id="pagination"><div class="next-post pull-full"><a href="/posts/e8f50adc/"><img class="next_cover" data-src="https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/cover/wallpaper-125399.jpg" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">k8s和k3s常用命令笔记</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fa fa-fw fa-thumbs-up" aria-hidden="true"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/posts/e8f50adc/" title="k8s和k3s常用命令笔记"><img class="relatedPosts_cover" data-src="https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/cover/wallpaper-125399.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2020-06-19</div><div class="relatedPosts_title">k8s和k3s常用命令笔记</div></div></a></div><div class="relatedPosts_item"><a href="/posts/c6002814/" title="k8s集群-node节点配置"><img class="relatedPosts_cover" data-src="https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/cover/wallpaper-48960.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2020-04-12</div><div class="relatedPosts_title">k8s集群-node节点配置</div></div></a></div><div class="relatedPosts_item"><a href="/posts/2859ce8b/" title="k8s集群-k8s部署"><img class="relatedPosts_cover" data-src="https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/cover/wallpaper-3032044.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2020-04-13</div><div class="relatedPosts_title">k8s集群-k8s部署</div></div></a></div><div class="relatedPosts_item"><a href="/posts/12df9359/" title="Rancher搭建k8s集群环境"><img class="relatedPosts_cover" data-src="https://cdn.jsdelivr.net/gh/chobon8/CDN@master/blog/cover/wallpaper-200244.jpg"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fa fa-calendar fa-fw" aria-hidden="true"></i> 2020-06-17</div><div class="relatedPosts_title">Rancher搭建k8s集群环境</div></div></a></div></div><div class="clear_both"></div></div><hr><div id="post-comment"><div class="comment_headling"><i class="fa fa-comments fa-fw" aria-hidden="true"></i><span> 评论</span></div><div class="vcomment" id="vcomment"></div><script src="https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js"></script><script>var requestSetting = function (from,set) {
+  var from = from
+  var setting = set.split(',').filter(function(item){
+  return from.indexOf(item) > -1
+  });
+  setting = setting.length == 0 ? from :setting;
+  return setting
+}
+
+var guestInfo = requestSetting(['nick','mail','link'],'nick,mail,link')
+var requiredFields = requestSetting(['nick','mail','link'],'nick,mail')
+
+window.valine = new Valine({
+  el:'#vcomment',
+  appId: '3lXNi1tnwfeIckEfNYbFSwVI-gzGzoHsz',
+  appKey: 'Krb8bW0ekj6TRLt745Cc7tI3',
+  notify: false,
+  verify: false,
+  placeholder: 'Please leave your footprints',
+  avatar: 'monsterid',
+  meta: guestInfo,
+  pageSize: '10',
+  lang: 'zh-cn',
+  recordIP: true,
+  serverURLs: '',
+  emojiCDN: '',
+  emojiMaps: "",
+  enableQQ: false,
+  requiredFields: requiredFields
+});</script></div></article></main><footer id="footer" data-type="color"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2020 By 二博</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><i class="fa fa-book" id="readmode" title="阅读模式"></i><i class="fa fa-plus" id="font_plus" title="放大字体"></i><i class="fa fa-minus" id="font_minus" title="缩小字体"></i><a class="translate_chn_to_cht" id="translateLink" href="javascript:translatePage();" title="简繁转换" target="_self">繁</a><i class="darkmode fa fa-moon-o" id="darkmode" title="夜间模式"></i></div><div id="rightside-config-show"><div id="rightside_config" title="设置"><i class="fa fa-cog" aria-hidden="true"></i></div><a id="to_comment" href="#post-comment" title="直达评论"><i class="scroll_to_comment fa fa-comments">  </i></a><i class="fa fa-list-ul close" id="mobile-toc-button" title="目录" aria-hidden="true"></i><i class="fa fa-arrow-up" id="go-up" title="回到顶部" aria-hidden="true"></i></div></section><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@latest/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js"></script></body></html>
