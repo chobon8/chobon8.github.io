@@ -1,0 +1,329 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Ubuntu 16.04上使用 Let's Encrypt 来保护Nginx | 二博</title><meta name="keywords" content="Ubuntu,Nginx"><meta name="author" content="二博"><meta name="copyright" content="二博"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="介绍Let’s Encrypt 是由 Internet Security Research Group（ISRG）开发的免费开放证书颁发机构。 今天几乎所有浏览器都信任 Let’s Encrypt 颁发的证书。 在本教程中，我们将提供有关如何使用 Ubuntu 16.04 上的 certbot 工具使用 Let’s Encrypt 来保护您的 Nginx 的分步说明。 准备条件在继续本教程之前，请">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ubuntu 16.04上使用 Let&#39;s Encrypt 来保护Nginx">
+<meta property="og:url" content="https://blog.chobon.top/posts/7b545b47/index.html">
+<meta property="og:site_name" content="二博">
+<meta property="og:description" content="介绍Let’s Encrypt 是由 Internet Security Research Group（ISRG）开发的免费开放证书颁发机构。 今天几乎所有浏览器都信任 Let’s Encrypt 颁发的证书。 在本教程中，我们将提供有关如何使用 Ubuntu 16.04 上的 certbot 工具使用 Let’s Encrypt 来保护您的 Nginx 的分步说明。 准备条件在继续本教程之前，请">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg">
+<meta property="article:published_time" content="2020-11-08T10:15:45.000Z">
+<meta property="article:modified_time" content="2022-10-07T04:19:19.968Z">
+<meta property="article:author" content="二博">
+<meta property="article:tag" content="Ubuntu">
+<meta property="article:tag" content="Nginx">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg"><link rel="shortcut icon" href="https://img.chobon.top/blog/img/favicon.ico"><link rel="canonical" href="https://blog.chobon.top/posts/7b545b47/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/@fancyapps/ui@latest/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":150,"languages":{"author":"作者: 二博","link":"链接: ","source":"来源: 二博","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://fastly.jsdelivr.net/npm/flickr-justified-gallery@latest/dist/fjGallery.min.js',
+      css: 'https://fastly.jsdelivr.net/npm/flickr-justified-gallery@latest/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Ubuntu 16.04上使用 Let\'s Encrypt 来保护Nginx',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-10-07 12:19:19'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><style type="text/css">.card-announcement .social-button{margin:.6rem 0 0 0;text-align:center}.card-announcement .social-button a{display:block;background-color:var(--btn-bg);color:var(--btn-color);text-align:center;line-height:2.4;margin:4px 0}.card-announcement .social-button a:hover{background-color:var(--btn-hover-color)}</style><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">30</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-heart"></i><span> 豆瓣</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-film"></i><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw fas fa-book"></i><span> 书单</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 更多</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://img.chobon.top/blog/cover/wallpaper-3032044.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">二博</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-heart"></i><span> 豆瓣</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-film"></i><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw fas fa-book"></i><span> 书单</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 更多</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></li></ul></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Ubuntu 16.04上使用 Let's Encrypt 来保护Nginx</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-11-08T10:15:45.000Z" title="发表于 2020-11-08 18:15:45">2020-11-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-10-07T04:19:19.968Z" title="更新于 2022-10-07 12:19:19">2022-10-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linux/">Linux</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linux/Ubuntu/">Ubuntu</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>4分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Ubuntu 16.04上使用 Let's Encrypt 来保护Nginx"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>Let’s Encrypt 是由 Internet Security Research Group（ISRG）开发的免费开放证书颁发机构。 今天几乎所有浏览器都信任 Let’s Encrypt 颁发的证书。</p>
+<p>在本教程中，我们将提供有关如何使用 Ubuntu 16.04 上的 certbot 工具使用 Let’s Encrypt 来保护您的 Nginx 的分步说明。</p>
+<h2 id="准备条件"><a href="#准备条件" class="headerlink" title="准备条件"></a>准备条件</h2><p>在继续本教程之前，请确保您已满足以下先决条件：</p>
+<ul>
+<li>您有一个指向公共服务器 IP 的域名。 在本教程中，我们将使用 example.com。</li>
+<li>您按照这些<a href="../c72d5e78/">说明安装</a>了 Nginx 。</li>
+<li>您有一个适用于您的域的服务器块。 您可以按照本文获取有关如何创建一个的详细信息。</li>
+</ul>
+<h2 id="安装-Certbot"><a href="#安装-Certbot" class="headerlink" title="安装 Certbot"></a>安装 Certbot</h2><p>Certbot 是一个功能齐全且易于使用的工具，可以自动完成获取和更新 Let’s Encrypt SSL证书以及配置Web服务器以使用它们的任务。 certbot 包包含在默认的 Ubuntu 存储库中。</p>
+<p>更新软件包列表并安装 certbot 软件包：</p>
+<p><code>sudo apt update</code><br><code>sudo apt install certbot</code></p>
+<h3 id="Certbot验证方式"><a href="#Certbot验证方式" class="headerlink" title="Certbot验证方式"></a>Certbot验证方式</h3><ul>
+<li>cerbot验证方式有下面几种：apache，nginx，webroot，standalone，dns plugins，manual</li>
+<li>apache，nginx申请的证书只用自身服务的，我们选择通常生产有Standanlone 、Webroot，Manual，DNS Plugins</li>
+<li>Standalone 方式： certbot 会自己运行一个 web server 来进行验证，暂时占用服务器的 80 或者 443 端口。如果我们自己的服务器上已经有 web server 正在运行 （比如 Nginx 或 Apache ），用 standalone 方式的话需要先关掉它，以免冲突。</li>
+<li>Webroot 方式： certbot 会利用既有的 web server，在其 web root目录下创建隐藏文件， Let’s Encrypt 服务端会通过域名来访问这些隐藏文件，以确认你的确拥有对应域名的控制权。</li>
+<li>Manual：表示手动交互模式，Certbot 有很多插件，不同的插件都可以申请证书，用户可以根据需要自行选择</li>
+<li>DNS Plugins：使用各类型的DNS插件证明这个域名是属于你的，自动验证方式创建泛域名证书，不是所有的域名都能用自动验证方式创建证书，需要查看官方支持域名供应商，如阿里云是没有提供API来自动验证</li>
+</ul>
+<h2 id="获取证书"><a href="#获取证书" class="headerlink" title="获取证书"></a>获取证书</h2><p>这里选择standalone方式</p>
+<p><em><strong>注意：certbot 默认使用http方式对域名所有权进行验证，该操作需要绑定vps的80端口。如果80端口已被占用，请先停止占用的进程，例如停止Nginx：systemctl stop nginx</strong></em></p>
+<blockquote>
+<p>阿里云、腾讯云等购买的服务器，还需要在vps网页后台的安全组中放行80端口。</p>
+</blockquote>
+<p>如果有其他二级域名，继续添加-d参数即可。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root@vultr:~# certbot certonly --standalone -d example.com -d www.example.com ...</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>如果域名记录未指向服务器的IP，会报错并提示域名解析问题。</p>
+</blockquote>
+<h2 id="配置证书"><a href="#配置证书" class="headerlink" title="配置证书"></a>配置证书</h2><p>各个web服务器的配置不一样，本文提供Nginx的配置例子</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen 80;</span><br><span class="line">    server_name www.example.com example.com;</span><br><span class="line">    rewrite ^(.*) https://$server_name/$1 permanent;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">    listen 443 ssl;</span><br><span class="line">    server_name www.example.com example.com;</span><br><span class="line">    charset utf-8;</span><br><span class="line"></span><br><span class="line">    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;</span><br><span class="line">    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;</span><br><span class="line">    ssl_protocols TLSv1.2 TLSv1.3; # TLSv1.3需要nginx 1.13.0以上版本</span><br><span class="line">    # 如果nginx版本低，建议使用这种加密算法配置</span><br><span class="line">    # ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;</span><br><span class="line">    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384;</span><br><span class="line">    ssl_ecdh_curve secp384r1;</span><br><span class="line">    ssl_prefer_server_ciphers on;</span><br><span class="line">    ssl_session_cache shared:SSL:10m;</span><br><span class="line">    ssl_session_timeout 10m;</span><br><span class="line">    ssl_session_tickets off;</span><br><span class="line">    keepalive_timeout 70;</span><br><span class="line"></span><br><span class="line">    # 这里填写其他配置</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>配置分为两个server段，第一段是所有http请求都导向https；第二段以ssl开头的配置都和证书相关：设置证书和私钥的位置、证书采用的协议、证书的加密算法等信息。</p>
+<p>为了增强安全性，ssl_protocols、ssl_ciphers和ssl_prefer_server_ciphers的配置建议采用以上配置。</p>
+<p>配置好以后，运行nginx -t命令查看有无错误。配置正确的话用systemctl restart nginx 重新启动nginx。</p>
+<p>https使用443端口，如果开启了防火墙，记得放行https服务：</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --permanent --add-service=https</span><br><span class="line"># 如果监听了其他端口，使用下面的命令</span><br><span class="line"># firewall-cmd --permanent --add-port=端口号/tcp</span><br><span class="line">firewall-cmd --reload</span><br></pre></td></tr></table></figure>
+
+<h2 id="证书自动更新"><a href="#证书自动更新" class="headerlink" title="证书自动更新"></a>证书自动更新</h2><p>Let’s Encrypt证书的有效期是三个月，超过期限则需要续签。证书续期可以手动完成，例如：</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop nginx</span><br><span class="line">certbot renew</span><br><span class="line">systemctl restart nginx</span><br></pre></td></tr></table></figure>
+
+<p>也可以配置crontab任务自动续签，在&#x2F;etc&#x2F;crontab文件末添加一行：</p>
+<p><code>0 0 1 */2 0 root systemctl stop nginx; /usr/local/bin/certbot renew; systemctl restart nginx</code></p>
+<p>ubuntu默认安装的certbot路径是&#x2F;usr&#x2F;bin&#x2F;certbot，可使用 which certbot 查看，如果输出不同，请记得替换。该配置将每两个月自动运行certbot并续签证书。如果你的证书快到期了还没有续签，贴心的EFF（电子前哨基金会）会发邮件提醒，记得到期前续签就行。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://blog.chobon.top">二博</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://blog.chobon.top/posts/7b545b47/">https://blog.chobon.top/posts/7b545b47/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.chobon.top" target="_blank">二博</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Ubuntu/">Ubuntu</a><a class="post-meta__tags" href="/tags/Nginx/">Nginx</a></div><div class="post_share"><div class="social-share" data-image="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/butterfly-extsrc@latest/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://fastly.jsdelivr.net/npm/butterfly-extsrc@latest/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img.chobon.top/blog/img/wechat.png" target="_blank"><img class="post-qr-code-img" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/wechat.png" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img.chobon.top/blog/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/alipay.jpg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/c72d5e78/"><img class="prev-cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Ubuntu 16.04安装Nginx</div></div></a></div><div class="next-post pull-right"><a href="/posts/24a6c251/"><img class="next-cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">V2ray流量伪装</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/ca8752b5/" title="Ubuntu 16.04升级Nginx"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-29</div><div class="title">Ubuntu 16.04升级Nginx</div></div></a></div><div><a href="/posts/c72d5e78/" title="Ubuntu 16.04安装Nginx"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-11</div><div class="title">Ubuntu 16.04安装Nginx</div></div></a></div><div><a href="/posts/8b9289f/" title="Ubuntu 20.04上搭建vpn服务器"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-10-08</div><div class="title">Ubuntu 20.04上搭建vpn服务器</div></div></a></div><div><a href="/posts/bc681fc7/" title="Ubuntu安装Docker"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/Docker_Logo.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-12-02</div><div class="title">Ubuntu安装Docker</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">二博</div><div class="author-info__description">生活不止有工作</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">73</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">30</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/chobon8"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/chobon8" target="_blank" title="Github"><i class="fas fa-github"></i></a><a class="social-icon" href="mailto:chobon@aliyun.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="/atom.xml" target="_blank" title="RSS"><i class="fas fa-rss"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.</span> <span class="toc-text">准备条件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85-Certbot"><span class="toc-number">3.</span> <span class="toc-text">安装 Certbot</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Certbot%E9%AA%8C%E8%AF%81%E6%96%B9%E5%BC%8F"><span class="toc-number">3.1.</span> <span class="toc-text">Certbot验证方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E8%AF%81%E4%B9%A6"><span class="toc-number">4.</span> <span class="toc-text">获取证书</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E8%AF%81%E4%B9%A6"><span class="toc-number">5.</span> <span class="toc-text">配置证书</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%81%E4%B9%A6%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0"><span class="toc-number">6.</span> <span class="toc-text">证书自动更新</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/a594add/" title="RKE搭建Kubernetes集群环境"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RKE搭建Kubernetes集群环境"/></a><div class="content"><a class="title" href="/posts/a594add/" title="RKE搭建Kubernetes集群环境">RKE搭建Kubernetes集群环境</a><time datetime="2022-03-08T14:22:08.000Z" title="发表于 2022-03-08 22:22:08">2022-03-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/bc681fc7/" title="Ubuntu安装Docker"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/Docker_Logo.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Ubuntu安装Docker"/></a><div class="content"><a class="title" href="/posts/bc681fc7/" title="Ubuntu安装Docker">Ubuntu安装Docker</a><time datetime="2021-12-02T15:07:41.000Z" title="发表于 2021-12-02 23:07:41">2021-12-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/da975915/" title="V2ray更新gRPC"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="V2ray更新gRPC"/></a><div class="content"><a class="title" href="/posts/da975915/" title="V2ray更新gRPC">V2ray更新gRPC</a><time datetime="2021-11-30T10:15:45.000Z" title="发表于 2021-11-30 18:15:45">2021-11-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ca8752b5/" title="Ubuntu 16.04升级Nginx"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Ubuntu 16.04升级Nginx"/></a><div class="content"><a class="title" href="/posts/ca8752b5/" title="Ubuntu 16.04升级Nginx">Ubuntu 16.04升级Nginx</a><time datetime="2021-11-29T14:51:45.000Z" title="发表于 2021-11-29 22:51:45">2021-11-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5386e490/" title="Linux Page Cache占用回收"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux Page Cache占用回收"/></a><div class="content"><a class="title" href="/posts/5386e490/" title="Linux Page Cache占用回收">Linux Page Cache占用回收</a><time datetime="2021-11-29T04:15:58.000Z" title="发表于 2021-11-29 12:15:58">2021-11-29</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2022 By 二博</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="https://fastly.jsdelivr.net/npm/hexo-theme-butterfly@latest/source/js/utils.js"></script><script src="https://fastly.jsdelivr.net/npm/hexo-theme-butterfly@latest/source/js/main.js"></script><script src="https://fastly.jsdelivr.net/npm/hexo-theme-butterfly@latest/source/js/tw_cn.js"></script><script src="https://fastly.jsdelivr.net/npm/@fancyapps/ui@latest/dist/fancybox.umd.js"></script><script src="https://fastly.jsdelivr.net/npm/instant.page@latest/instantpage.js" type="module"></script><script src="https://fastly.jsdelivr.net/npm/vanilla-lazyload@latest/dist/lazyload.iife.min.js"></script><div class="js-pjax"><script>(() => {
+  const $mermaidWrap = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaidWrap.length) {
+    window.runMermaid = () => {
+      window.loadMermaid = true
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+      Array.from($mermaidWrap).forEach((item, index) => {
+        const mermaidSrc = item.firstElementChild
+        const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+        const mermaidID = 'mermaid-' + index
+        const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+        mermaid.mermaidAPI.render(mermaidID, mermaidDefinition, (svgCode) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svgCode)
+        })
+      })
+    }
+
+    const loadMermaid = () => {
+      window.loadMermaid ? runMermaid() : getScript('https://fastly.jsdelivr.net/npm/mermaid@latest/dist/mermaid.min.js').then(runMermaid)
+    }
+
+    window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+  }
+})()</script><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '3lXNi1tnwfeIckEfNYbFSwVI',
+      appKey: 'Krb8bW0ekj6TRLt745Cc7tI3',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://fastly.jsdelivr.net/npm/valine@latest/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><div class="aplayer no-destroy" data-id="2201879658" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"></div><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/aplayer@latest/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://fastly.jsdelivr.net/npm/aplayer@latest/dist/APlayer.min.js"></script><script src="https://fastly.jsdelivr.net/npm/butterfly-extsrc@latest/metingjs/dist/Meting.min.js"></script><script src="https://fastly.jsdelivr.net/npm/pjax@latest/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  typeof preloader === 'object' && preloader.initLoading()
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+
+  typeof preloader === 'object' && preloader.endLoading()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
