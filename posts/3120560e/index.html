@@ -1,0 +1,539 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>CentOS学习KVM笔记-安装篇 | 二博</title><meta name="author" content="二博"><meta name="copyright" content="二博"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前言为了学习docker集群，打算在CentOS里面安装KVM虚拟机来做docker集群  KVMKVM(Kernel-based Virtual Machine, 即内核级虚拟机) 是一个开源的系统虚拟化模块。它使用Linux自身的调度器进行管理，所以相对于Xen，其核心源码很少。目前KVM已成为学术界的主流VMM之一，它包含一个为处理器提供底层虚拟化 可加载的核心模块kvm.ko(kvm-in">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CentOS学习KVM笔记-安装篇">
+<meta property="og:url" content="https://blog.chobon.top/posts/3120560e/index.html">
+<meta property="og:site_name" content="二博">
+<meta property="og:description" content="前言为了学习docker集群，打算在CentOS里面安装KVM虚拟机来做docker集群  KVMKVM(Kernel-based Virtual Machine, 即内核级虚拟机) 是一个开源的系统虚拟化模块。它使用Linux自身的调度器进行管理，所以相对于Xen，其核心源码很少。目前KVM已成为学术界的主流VMM之一，它包含一个为处理器提供底层虚拟化 可加载的核心模块kvm.ko(kvm-in">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img.chobon.top/blog/cover/wallpaper-48960.jpg">
+<meta property="article:published_time" content="2019-12-13T14:39:34.000Z">
+<meta property="article:modified_time" content="2025-10-05T13:49:10.350Z">
+<meta property="article:author" content="二博">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="CentOS">
+<meta property="article:tag" content="虚拟机">
+<meta property="article:tag" content="KVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.chobon.top/blog/cover/wallpaper-48960.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "CentOS学习KVM笔记-安装篇",
+  "url": "https://blog.chobon.top/posts/3120560e/",
+  "image": "https://img.chobon.top/blog/cover/wallpaper-48960.jpg",
+  "datePublished": "2019-12-13T14:39:34.000Z",
+  "dateModified": "2025-10-05T13:49:10.350Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "二博",
+      "url": "https://blog.chobon.top/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://img.chobon.top/blog/img/favicon.ico"><link rel="canonical" href="https://blog.chobon.top/posts/3120560e/index.html"><link rel="preconnect" href="https://cdn.staticfile.org"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'true',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.staticfile.org/egjs-infinitegrid/4.12.0/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'CentOS学习KVM笔记-安装篇',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><style type="text/css">.card-announcement .social-button{margin:.6rem 0 0 0;text-align:center}.card-announcement .social-button a{display:block;background-color:var(--btn-bg);color:var(--btn-color);text-align:center;line-height:2.4;margin:4px 0}.card-announcement .social-button a:hover{background-color:var(--btn-hover-color)}</style><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="二博" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">75</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">30</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-heart"></i><span> 豆瓣</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-film"></i><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw fas fa-book"></i><span> 书单</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 更多</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://img.chobon.top/blog/cover/wallpaper-48960.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">二博</span></a><a class="nav-page-title" href="/"><span class="site-name">CentOS学习KVM笔记-安装篇</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-heart"></i><span> 豆瓣</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-film"></i><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw fas fa-book"></i><span> 书单</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 更多</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></li></ul></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">CentOS学习KVM笔记-安装篇</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2019-12-13T14:39:34.000Z" title="发表于 2019-12-13 22:39:34">2019-12-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-10-05T13:49:10.350Z" title="更新于 2025-10-05 21:49:10">2025-10-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/Linux/">Linux</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/KVM/">KVM</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>9分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>为了学习docker集群，打算在CentOS里面安装KVM虚拟机来做docker集群</p>
+<ul>
+<li><strong>KVM</strong><br>KVM(Kernel-based Virtual Machine, 即内核级虚拟机) 是一个开源的系统虚拟化模块。它使用Linux自身的调度器进行管理，所以相对于Xen，其核心源码很少。目前KVM已成为学术界的主流VMM之一，它包含一个为处理器提供底层虚拟化 可加载的核心模块kvm.ko(kvm-intel.ko 或 kvm-amd.ko)。kvm还需要一个经过修改的QEMU 软件(qemu-kvm)，作为虚拟机上层控制和界面。KVM的虚拟化需要硬件支持(如 Intel VT技术或者AMD V技术)。是基于硬件的完全虚拟化。 KVM可以运行多个其本身运行未改动的镜像的虚拟机，例如Windows，Mac OS X ，每个虚拟机都有各自的虚拟硬件，比如网卡、硬盘核图形适配器等。<span id="more"></span></li>
+</ul>
+<h2 id="kvm相关依赖包和作用"><a href="#kvm相关依赖包和作用" class="headerlink" title="kvm相关依赖包和作用"></a>kvm相关依赖包和作用</h2><p><strong>qemu-kvm</strong> &amp;emsp;&amp;emsp;&amp;emsp;          主要的KVM程序包<br><strong>python-virtinst</strong> &amp;emsp;   创建虚拟机所需要的命令行工具和程序库<br><strong>virt-manager</strong> &amp;emsp;&amp;emsp;      GUI虚拟机管理工具<br><strong>virt-top</strong> &amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;&amp;ensp;         虚拟机统计命令<br><strong>virt-viewer</strong> &amp;emsp;&amp;emsp;&amp;emsp;      GUI连接程序，连接到已配置好的虚拟机<br><strong>libvirt</strong>&amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;&amp;emsp;&amp;ensp;          C语言工具包，提供libvirt服务<br><strong>libvirt-client</strong>&amp;emsp;&amp;emsp;&amp;ensp;   虚拟客户机提供的C语言工具包<br><strong>virt-install</strong>&amp;emsp;&amp;emsp;&amp;emsp;&amp;ensp;     基于libvirt服务的虚拟机创建命令<br><strong>bridge-utils</strong> &amp;emsp;&amp;emsp;&amp;ensp;     创建和管理桥接设备的工具  </p>
+<h2 id="检测是否支持KVM"><a href="#检测是否支持KVM" class="headerlink" title="检测是否支持KVM"></a>检测是否支持KVM</h2><ul>
+<li>检查cpu是否支持虚拟化</li>
+</ul>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="type">root</span>@<span class="type">chobon</span> ~]<span class="comment"># grep vmx /proc/cpuinfo</span></span><br></pre></td></tr></table></figure>
+
+<p>如果有vmx信息输出，就说明支持VT;如果没有任何的输出，说明你的cpu不支持，将无法使用KVM虚拟机。</p>
+<ul>
+<li>确保BIOS里开启虚拟化功能，即查看是否加载KVM模块</li>
+</ul>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="type">root</span>@<span class="type">chobon</span> ~]<span class="comment"># lsmod | grep kvm</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>安装虚拟机服务</li>
+</ul>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="type">root</span>@<span class="type">chobon</span> ~]<span class="comment"># yum install qemu-kvm libvirt virt-install bridge-utils</span></span><br></pre></td></tr></table></figure>
+
+<p>启动服务</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="type">root</span>@<span class="type">chobon</span> ~]<span class="comment"># systemctl start libvirtd</span></span><br></pre></td></tr></table></figure>
+
+<p>检查下服务是否正常</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[<span class="type">root</span>@<span class="type">chobon</span> ~]<span class="comment"># systemctl status libvirtd</span></span><br><span class="line"></span><br><span class="line">● libvirtd.service - Virtualization daemon</span><br><span class="line">   Loaded: loaded (/usr/lib/systemd/system/libvirtd.service; enabled; vendor preset: enabled)</span><br><span class="line">   Active: active (running) since 三 <span class="number">2019</span><span class="literal">-12-18</span> <span class="number">20</span>:<span class="number">30</span>:<span class="number">09</span> CST; <span class="number">9</span>s ago</span><br><span class="line">     Docs: <span class="built_in">man</span>:libvirtd(<span class="number">8</span>)</span><br><span class="line">           https://libvirt.org</span><br><span class="line"> Main PID: <span class="number">20262</span> (libvirtd)</span><br><span class="line">    Tasks: <span class="number">19</span> (limit: <span class="number">32768</span>)</span><br><span class="line">   CGroup: /system.slice/libvirtd.service</span><br><span class="line">           ├─ <span class="number">2405</span> /usr/sbin/dnsmasq <span class="literal">--conf-file</span>=/var/lib/libvirt/dnsmasq/default.conf <span class="literal">--leasefile-ro</span> <span class="literal">--dhcp-script</span>=/usr/libexec/libvirt_leaseshelper</span><br><span class="line">           ├─ <span class="number">2407</span> /usr/sbin/dnsmasq <span class="literal">--conf-file</span>=/var/lib/libvirt/dnsmasq/default.conf <span class="literal">--leasefile-ro</span> <span class="literal">--dhcp-script</span>=/usr/libexec/libvirt_leaseshelper</span><br><span class="line">           └─<span class="number">20262</span> /usr/sbin/libvirtd</span><br><span class="line"></span><br><span class="line"><span class="number">12</span>月 <span class="number">18</span> <span class="number">20</span>:<span class="number">30</span>:<span class="number">09</span> chobon systemd[<span class="number">1</span>]: Starting Virtualization daemon...</span><br><span class="line"><span class="number">12</span>月 <span class="number">18</span> <span class="number">20</span>:<span class="number">30</span>:<span class="number">09</span> chobon systemd[<span class="number">1</span>]: Started Virtualization daemon.</span><br><span class="line"><span class="number">12</span>月 <span class="number">18</span> <span class="number">20</span>:<span class="number">30</span>:<span class="number">09</span> chobon dnsmasq[<span class="number">2405</span>]: read /etc/hosts - <span class="number">2</span> addresses</span><br><span class="line"><span class="number">12</span>月 <span class="number">18</span> <span class="number">20</span>:<span class="number">30</span>:<span class="number">09</span> chobon dnsmasq[<span class="number">2405</span>]: read /var/lib/libvirt/dnsmasq/default.addnhosts - <span class="number">0</span> addresses</span><br><span class="line"><span class="number">12</span>月 <span class="number">18</span> <span class="number">20</span>:<span class="number">30</span>:<span class="number">09</span> chobon dnsmasq<span class="literal">-dhcp</span>[<span class="number">2405</span>]: read /var/lib/libvirt/dnsmasq/default.hostsfile</span><br><span class="line"><span class="number">12</span>月 <span class="number">18</span> <span class="number">20</span>:<span class="number">30</span>:<span class="number">09</span> chobon libvirtd[<span class="number">20262</span>]: <span class="number">2019</span><span class="literal">-12-18</span> <span class="number">12</span>:<span class="number">30</span>:<span class="number">09.896</span>+<span class="number">0000</span>: <span class="number">20278</span>: info : libvirt version: <span class="number">4.5</span>.<span class="number">0</span>, package: <span class="number">23</span>.el7_7.<span class="number">3</span> (CentOS BuildSystem &lt;http://bugs.centos.org&gt;, <span class="number">2019</span><span class="literal">-12-02-17</span>:<span class="number">45</span>:<span class="number">06</span>, x86<span class="literal">-02</span>.bsys.centos.org)</span><br><span class="line"><span class="number">12</span>月 <span class="number">18</span> <span class="number">20</span>:<span class="number">30</span>:<span class="number">09</span> chobon libvirtd[<span class="number">20262</span>]: <span class="number">2019</span><span class="literal">-12-18</span> <span class="number">12</span>:<span class="number">30</span>:<span class="number">09.896</span>+<span class="number">0000</span>: <span class="number">20278</span>: info : hostname: chobon</span><br><span class="line"><span class="number">12</span>月 <span class="number">18</span> <span class="number">20</span>:<span class="number">30</span>:<span class="number">09</span> chobon libvirtd[<span class="number">20262</span>]: <span class="number">2019</span><span class="literal">-12-18</span> <span class="number">12</span>:<span class="number">30</span>:<span class="number">09.896</span>+<span class="number">0000</span>: <span class="number">20278</span>: warning : virStorageBackendVolOpen:<span class="number">1622</span> : ignoring dangling symlink <span class="string">&#x27;/etc/grub2.cfg&#x27;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="安装虚拟机"><a href="#安装虚拟机" class="headerlink" title="安装虚拟机"></a>安装虚拟机</h2><ul>
+<li>下载镜像</li>
+</ul>
+<p><code>wget</code>和<code>curl</code>都可以  </p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">wget</span> http://mirrors.aliyun.com/centos/<span class="number">7.7</span>.<span class="number">1908</span>/isos/x86_64/CentOS<span class="literal">-7-x86_64-Minimal-1908</span>.iso</span><br><span class="line"><span class="built_in">curl</span> <span class="literal">-sSLO</span> http://mirrors.aliyun.com/centos/<span class="number">7.7</span>.<span class="number">1908</span>/isos/x86_64/CentOS<span class="literal">-7-x86_64-Minimal-1908</span>.iso</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>使用qemu-img命令可以创建磁盘文件</li>
+</ol>
+<ul>
+<li>创建一个raw格式的磁盘文件</li>
+</ul>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="type">root</span>@<span class="type">chobon</span> ~]<span class="comment"># qemu-img create /mnt/kvm/vm1.raw 20G</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>转换磁盘格式为qcow2</li>
+</ul>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="type">root</span>@<span class="type">chobon</span> ~]<span class="comment"># qemu-img convert -f raw -O qcow2 /mnt/kvm/vm1.raw /mnt/kvm/vm1.qcow2</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>使用virt-install命令创建虚拟机</li>
+</ol>
+<p><em><strong><code>virt-install --help</code></strong></em>  </p>
+<blockquote>
+<p>查看命令选项说明</p>
+</blockquote>
+<ul>
+<li><strong>常用选项：</strong><ul>
+<li><code>-n</code> <code>--name</code> 虚拟机名称</li>
+<li><code>-r</code> <code>--memory</code> 以MB为单位为客户端事件分配的内存</li>
+<li><code>vcpus</code> 配置虚拟机的虚拟CPU(vcpu)数量<ul>
+<li><code>--vcpus 5</code></li>
+<li><code>--vcpus 5, maxcpus=10</code></li>
+<li><code>--vcpus socket=2,cores=4,threads=2</code></li>
+</ul>
+</li>
+<li><code>-l</code> <code>--location</code> 安装源(例如：<code>nfs:host:/path</code>、<code>http://host/path</code>、<code>ftp://host/path</code>)</li>
+<li><code>--pxe</code> 使用 PXE 协议从网络引导</li>
+<li><code>--import</code> 在磁盘映像中构建客户机</li>
+<li><code>--livecd</code> 将光驱介质视为 Live CD</li>
+<li><code>-x</code> <code>--extra-args</code> 附加到使用 –location 引导的内核的参数</li>
+<li><code>--disk</code> 用各种选项指定存储<ul>
+<li><code>--disk path=/my/existing/disk,cache=none</code></li>
+<li><code>--disk path=/my/new/disk,format=qcow2,size=5,sparse (单位GB)</code></li>
+<li><code>--disk vol=poolname:volname,device=cdrom,bus=scsi</code></li>
+</ul>
+</li>
+<li><code>-w</code> <code>--network</code> 配置客户网络接口<ul>
+<li><code>--network bridge=mybr0</code></li>
+<li><code>--network network=my_libvirt_virtual_net</code></li>
+<li><code>--network network=mynet,model=virtio,mac=00:11...</code></li>
+</ul>
+</li>
+<li><code>--nonetworks</code> 不要为该客体创建网络接口</li>
+<li><code>--graphics</code> 配置虚拟机显示设置<ul>
+<li><code>--graphics vnc</code></li>
+<li><code>--graphics spice,port=5901,tlsport=5902</code></li>
+<li><code>--graphics none</code></li>
+<li><code>--graphics vnc,password=foobar,port=5910,keymap=ja</code></li>
+</ul>
+</li>
+<li><code>--virt-type</code> 要使用的管理程序名称(kvm、qemu、xen)</li>
+<li><code>--force</code> 对任意应用程序提示强制回答‘yes’，终止其它提示</li>
+</ul>
+</li>
+<li><hr>
+</li>
+</ul>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">virt<span class="literal">-install</span> \</span><br><span class="line"><span class="literal">--virt-type</span>=kvm \</span><br><span class="line"><span class="literal">--name</span>=vm1_centos7 \</span><br><span class="line"><span class="literal">--vcpus</span>=<span class="number">2</span> \</span><br><span class="line"><span class="literal">--memory</span>=<span class="number">2048</span> \</span><br><span class="line"><span class="literal">--location</span>=/kvm/iso/CentOS<span class="literal">-7-x86_64-Minimal-1908</span>.iso \</span><br><span class="line"><span class="literal">--disk</span> path=/kvm/vfs/vm1.qcow2,size=<span class="number">40</span>,format=qcow2 \</span><br><span class="line"><span class="literal">--network</span> network=default \</span><br><span class="line"><span class="literal">--graphics</span> none \</span><br><span class="line"><span class="literal">--extra-args</span>=<span class="string">&#x27;console=ttyS0&#x27;</span> \</span><br><span class="line"><span class="literal">--force</span></span><br></pre></td></tr></table></figure>
+
+<p>剩下的就跟安装系统一样了</p>
+<ul>
+<li>安装选项</li>
+</ul>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Starting installer, one moment...</span><br><span class="line">anaconda <span class="number">21.48</span>.<span class="number">22.134</span><span class="literal">-1</span> <span class="keyword">for</span> CentOS <span class="number">7</span> started.</span><br><span class="line"> * installation log files are stored <span class="keyword">in</span> /tmp during the installation</span><br><span class="line"> * shell is available on TTY2</span><br><span class="line"> * when reporting a bug add logs from /tmp as separate text/plain attachments</span><br><span class="line"><span class="number">18</span>:<span class="number">21</span>:<span class="number">12</span> Not asking <span class="keyword">for</span> VNC because we don<span class="string">&#x27;t have a network</span></span><br><span class="line"><span class="string">================================================================================</span></span><br><span class="line"><span class="string">================================================================================</span></span><br><span class="line"><span class="string">Installation</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"> 1) [x] Language settings                 2) [!] Time settings</span></span><br><span class="line"><span class="string">        (English (United States))                (Timezone is not set.)</span></span><br><span class="line"><span class="string"> 2) [!] Installation source               4) [!] Software selection</span></span><br><span class="line"><span class="string">        (Processing...)                          (Processing...)</span></span><br><span class="line"><span class="string"> 3) [!] Installation Destination          6) [x] Kdump</span></span><br><span class="line"><span class="string">        (No disks selected)                      (Kdump is enabled)</span></span><br><span class="line"><span class="string"> 4) [ ] Network configuration             8) [!] Root password</span></span><br><span class="line"><span class="string">        (Not connected)                          (Password is not set.)</span></span><br><span class="line"><span class="string"> 5) [!] User creation</span></span><br><span class="line"><span class="string">        (No user will be created)</span></span><br><span class="line"><span class="string">  Please make your choice from above [&#x27;</span>q<span class="string">&#x27; to quit | &#x27;</span>b<span class="string">&#x27; to begin installation |</span></span><br><span class="line"><span class="string">  &#x27;</span><span class="built_in">r</span><span class="string">&#x27; to refresh]:</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">[anaconda] 1:main* 2:shell  3:log  4:storage-lo&gt; Switch tab: Alt+Tab | Help: F1</span></span><br></pre></td></tr></table></figure>
+
+<p>选择好基本安装选项后，就可以继续下一步了<br>基础安装选项，如下显示</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Installation</span><br><span class="line"></span><br><span class="line"> <span class="number">1</span>) [<span class="type">x</span>] Language settings                 <span class="number">2</span>) [<span class="type">x</span>] Time settings</span><br><span class="line">        (English (United States))                (Asia/Shanghai timezone)</span><br><span class="line"> <span class="number">3</span>) [<span class="type">x</span>] Installation source               <span class="number">4</span>) [<span class="type">x</span>] Software selection</span><br><span class="line">        (Local media)                            (Minimal Install)</span><br><span class="line"> <span class="number">5</span>) [<span class="type">x</span>] Installation Destination          <span class="number">6</span>) [<span class="type">x</span>] Kdump</span><br><span class="line">        (Automatic partitioning                  (Kdump is disabled)</span><br><span class="line">        selected)                         <span class="number">8</span>) [<span class="type">x</span>] Root password</span><br><span class="line"> <span class="number">7</span>) [ ] Network configuration                    (Password is <span class="built_in">set</span>.)</span><br><span class="line">        (Not connected)</span><br><span class="line"> <span class="number">9</span>) [ ] User creation</span><br><span class="line">        (No user will be created)</span><br><span class="line">  Please make your choice from above [<span class="string">&#x27;q&#x27;</span> <span class="type">to</span> <span class="type">quit</span> | <span class="string">&#x27;b&#x27;</span> <span class="type">to</span> <span class="type">begin</span> <span class="type">installation</span> |</span><br><span class="line">  <span class="string">&#x27;r&#x27;</span> <span class="type">to</span> <span class="type">refresh</span>]:</span><br></pre></td></tr></table></figure>
+
+<p>基本设置如下：</p>
+<ol>
+<li>语言保持不变  </li>
+<li>时区选择上海  </li>
+<li>安装源选择本地镜像  </li>
+<li>软件选择最小安装  </li>
+<li>安装磁盘选择自动分别，且使用LVM逻辑卷管理  </li>
+<li>关闭Kdump，虚拟机关系不大  </li>
+<li>网络先不管，安装之后处理  </li>
+<li>Root 密码设置  </li>
+<li>不创建新用户<br>最后，按下b开始安装过程。</li>
+</ol>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">================================================================================</span><br><span class="line">================================================================================</span><br><span class="line">Progress</span><br><span class="line">Setting up the installation environment</span><br><span class="line">.</span><br><span class="line">Creating disklabel on /dev/vda</span><br><span class="line">.</span><br><span class="line">Creating xfs on /dev/vda1</span><br><span class="line">.</span><br><span class="line">Creating lvmpv on /dev/vda2</span><br><span class="line">.</span><br><span class="line">Creating swap on /dev/mapper/centos<span class="literal">-swap</span></span><br><span class="line">.</span><br><span class="line">Creating xfs on /dev/mapper/centos<span class="literal">-root</span></span><br><span class="line">.</span><br><span class="line">Running pre<span class="literal">-installation</span> scripts</span><br><span class="line">.</span><br><span class="line">Starting package installation <span class="keyword">process</span></span><br><span class="line">Preparing transaction from installation source</span><br><span class="line">Installing libgcc (<span class="number">1</span>/<span class="number">300</span>)</span><br><span class="line">Installing grub2<span class="literal">-common</span> (<span class="number">2</span>/<span class="number">300</span>)</span><br><span class="line"></span><br><span class="line">....</span><br><span class="line"></span><br><span class="line">Installing iwl6000g2b<span class="literal">-firmware</span> (<span class="number">299</span>/<span class="number">300</span>)</span><br><span class="line">Installing iwl5150<span class="literal">-firmware</span> (<span class="number">300</span>/<span class="number">300</span>)</span><br><span class="line">Performing post<span class="literal">-installation</span> setup tasks</span><br><span class="line">Installing boot loader</span><br><span class="line">.</span><br><span class="line">Performing post<span class="literal">-installation</span> setup tasks</span><br><span class="line">.</span><br><span class="line"></span><br><span class="line">Configuring installed system</span><br><span class="line">.</span><br><span class="line">Writing network configuration</span><br><span class="line">.</span><br><span class="line">Creating users</span><br><span class="line">.</span><br><span class="line">Configuring addons</span><br><span class="line">.</span><br><span class="line">Generating initramfs</span><br><span class="line">.</span><br><span class="line">Running post<span class="literal">-installation</span> scripts</span><br><span class="line">.</span><br><span class="line">        Use of this product is subject to the license agreement found at /usr/share/centos<span class="literal">-release</span>/EULA</span><br><span class="line"></span><br><span class="line">        Installation complete.  Press <span class="keyword">return</span> to quit</span><br></pre></td></tr></table></figure>
+
+<p>几分钟后，安装结束<br>输入密码，进入系统</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">      CentOS Linux (<span class="number">3.10</span>.<span class="number">0</span><span class="literal">-862</span>.el7.x86_64) <span class="number">7</span> (Core)</span><br><span class="line">      CentOS Linux (<span class="number">0</span><span class="literal">-rescue-8707fc0ebc304aecae24959960933077</span>) <span class="number">7</span> (Core)</span><br><span class="line"></span><br><span class="line">......</span><br><span class="line"></span><br><span class="line">[   <span class="number">10.953832</span>] Netfilter messages via NETLINK v0.<span class="number">30</span>.</span><br><span class="line">[   <span class="number">10.967303</span>] ip_set: protocol <span class="number">6</span></span><br><span class="line"></span><br><span class="line">CentOS Linux <span class="number">7</span> (Core)</span><br><span class="line">Kernel <span class="number">3.10</span>.<span class="number">0</span><span class="literal">-862</span>.el7.x86_64 on an x86_64</span><br><span class="line"></span><br><span class="line">localhost login: root</span><br><span class="line">Password:</span><br><span class="line">[<span class="type">root</span>@<span class="type">localhost</span> ~]<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="常用指令"><a href="#常用指令" class="headerlink" title="常用指令"></a>常用指令</h2><ul>
+<li>查看在运行中的虚拟机</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh list</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>查看所有虚拟机</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh list --all</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>挂起虚拟机</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh <span class="built_in">suspend</span> linux-xx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>恢复挂起的虚拟机</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh resume linux-xx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>开机启动虚拟机</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh autostart linux-xx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>关闭开机启动虚拟机</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh auto start --<span class="built_in">disable</span> linux-xx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>关闭虚拟机</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh shutdown linux-xx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>连接虚拟机</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh console linux-xx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>停止虚拟机</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh destroy linux-xx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>删除虚拟机定义</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virsh undefine linux-xx</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://blog.chobon.top">二博</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://blog.chobon.top/posts/3120560e/">https://blog.chobon.top/posts/3120560e/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://blog.chobon.top" target="_blank">二博</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linux/">Linux</a><a class="post-meta__tags" href="/tags/CentOS/">CentOS</a><a class="post-meta__tags" href="/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/">虚拟机</a><a class="post-meta__tags" href="/tags/KVM/">KVM</a></div><div class="post-share"><div class="social-share" data-image="https://img.chobon.top/blog/cover/wallpaper-48960.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.staticfile.org/butterfly-extsrc/1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.staticfile.org/butterfly-extsrc/1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img.chobon.top/blog/img/wechat.png" target="_blank"><img class="post-qr-code-img" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/wechat.png" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img.chobon.top/blog/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/alipay.jpg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/8b6c1b3f/" title="CentOS修改主机名"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">CentOS修改主机名</div></div><div class="info-2"><div class="info-item-1"> 进到系统etc目录下  12345678910111213141516Last login: Fri Dec 13 22:02:18 2019 from 192.168.124.19[root@localhost ~]# cd /etc[root@localhost etc]# lsadjtime                  chkconfig.d   dbus-1                   favicon.png    gshadow      issue.net      login.defs                my.cnf             pki             rc0.d           rsyslog.conf   skel            sysctl.d            xinetd.daliases                  chrony.conf   default                  filesystems    gshadow-     kdump.conf    ...</div></div></div></a><a class="pagination-related" href="/posts/bae9a0d2/" title="RabbitMQ入门"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-125399.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">RabbitMQ入门</div></div><div class="info-2"><div class="info-item-1">背景在学习EventBus源码的时候，基于RabbitMQ持久化实现，顺带学习了下RabbitMQ。  RabbitMQ 是一个由erlang语言开发的遵循AMQP(Advanved Message Queue)协议的开源实现。  AMQP协议 是具有现代特征的二进制协议。是一个提供统一消息服务的应用层标准高级消息队列协议，是应用层协议的一个开放标准，为面向消息的中间件设计。   应用场景异步处理 上游不关心多下游执行结果，上游执行完发送到MQ，多下游订阅MQ。  应用解耦 数据驱动的任务依赖，多个任务需要轮流执行，轮流订阅上一个任务。  流量削峰 异步返回执行时间长  系统架构核心概念RabbitMQ结构 名词释义Broker 消息队列服务器，接受客户端的连接，实现AMQP实体服务  Connection 连接，应用程序与Broker的网络连接  ConnectionFactory Connection的制造工厂  Exchange 交换机，接收消息，根据路由键转发消息到绑定的队列  Exchange Types 交换机类型，RabbitMQ常用的Exchange Type有...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/7548ebee/" title="CentOS学习KVM笔记-磁盘篇"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2019-12-21</div><div class="info-item-2">CentOS学习KVM笔记-磁盘篇</div></div><div class="info-2"><div class="info-item-1">基础概念KVM 虚拟化中使用的镜像格式通常为 RAW 和 QCOW2 两种格式.  QCOW2  qcow2 镜像格式是 QEMU 模拟器支持的一种磁盘镜像。它也是可以用一个文件的形式来表示一块固定大小的块设备磁盘。与普通的 raw 格式的镜像相比，有以下特性：占用空间小，即使文件系统不支持空洞(holes)；支持写时拷贝（COW, copy-on-write），镜像文件只反映底层磁盘的变化；支持快照（snapshot）；镜像文件能够包含多个快照的历史；支持 zlib 的压缩；支持 AES 加密qcow2 第二代的QEMU写时复制格式，QEMU推荐的镜像格式，支持稀疏文件，支持AES加密，支持基于zlib的压缩，支持snapshot，支持后备镜像    RAW  RAW 格式镜像文件又被称为 原始镜像 或 裸设备镜像, RAW 格式镜像文件能够直接当作一个块设备类似&#x2F;dev&#x2F;sdb 设备可以直接挂载；可以使用dd指令创建一个 File 就能够模拟 RAW 镜像文件；性能较 QCOW2 要更高；能够随意转换格式；RAW不支持快照raw...</div></div></div></a><a class="pagination-related" href="/posts/e6e6d61e/" title="CentOS学习KVM笔记-管理篇"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-125399.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2019-12-29</div><div class="info-item-2">CentOS学习KVM笔记-管理篇</div></div><div class="info-2"><div class="info-item-1">克隆虚拟机KVM虚拟机的克隆分为两种  直接宿主机克隆 复制配置文件和磁盘文件  直接克隆 查看虚拟机状态  12345[root@chobon networks]# virsh list --all Id    名称                         状态---------------------------------------------------- 1     vm1_centos7                    running 3     vm2_centos7                    running   关闭虚拟机vm2_centos7  12[root@chobon networks]# virsh shutdown vm2_centos7域 vm2_centos7 被关闭   执行克隆指令，以vm2_cnetos7为源，克隆新虚拟机名称vm3_centos7，新虚拟机磁盘文件存储地址/mnt/kvm/vfs/vm3.qcow2  1234[root@chobon networks]# virt-clone -o...</div></div></div></a><a class="pagination-related" href="/posts/3504ec6a/" title="CentOS学习KVM笔记-网络篇"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-48960.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2019-12-18</div><div class="info-item-2">CentOS学习KVM笔记-网络篇</div></div><div class="info-2"><div class="info-item-1">...</div></div></div></a><a class="pagination-related" href="/posts/359bc848/" title="Proxmox安装"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-125399.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-19</div><div class="info-item-2">Proxmox安装</div></div><div class="info-2"><div class="info-item-1">准备安装USB启动盘安装文档 下载官方安装源官方ISO源 下载Proxmox VE 7.1 ISO Installer  制作USB启动盘下载官方推荐的USB启动盘安装工具Etcher  插入USB，启动USB安装工具，选择ISO，等待安装结束 开启BIOS虚拟化功能具体操作参考 安装插入USB启动盘，重启计算机，选择启动设备为刚插入的U盘，出现选择安装界面，选择Install Proxmox VE  选择安装磁盘，最好是NVMe接口的磁盘，为后续直通SATA Controller更简便  设置国家、时区和键盘布局  设置密码和邮箱  设置网络，由于我是通过PVE内部软路由上网，所以我设置的是路由内IP地址  接下来就可以等待安装结束，重启计算机，在同个网段或者连接网卡，输入刚才设置的ip地址，即可显示Proxmox的登陆界面  登录时，语言选择Chinese (Simplified)，登录成功后即可显示Proxmox...</div></div></div></a><a class="pagination-related" href="/posts/269386f3/" title="Proxmox更新"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-19</div><div class="info-item-2">Proxmox更新</div></div><div class="info-2"><div class="info-item-1">修改官方源 编辑/etc/apt/sources.list  删掉原来的源地址，添加国内源地址 12345678deb http://mirrors.aliyun.com/debian/ bullseye main non-free contribdeb http://mirrors.aliyun.com/debian/ bullseye-updates main non-free contribdeb http://mirrors.aliyun.com/debian/ bullseye-backports main non-free contribdeb-src http://mirrors.aliyun.com/debian/ bullseye main non-free contribdeb-src http://mirrors.aliyun.com/debian/ bullseye-updates main non-free contribdeb-src http://mirrors.aliyun.com/debian/ bullseye-backports main...</div></div></div></a><a class="pagination-related" href="/posts/8b6c1b3f/" title="CentOS修改主机名"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2019-12-13</div><div class="info-item-2">CentOS修改主机名</div></div><div class="info-2"><div class="info-item-1"> 进到系统etc目录下  12345678910111213141516Last login: Fri Dec 13 22:02:18 2019 from 192.168.124.19[root@localhost ~]# cd /etc[root@localhost etc]# lsadjtime                  chkconfig.d   dbus-1                   favicon.png    gshadow      issue.net      login.defs                my.cnf             pki             rc0.d           rsyslog.conf   skel            sysctl.d            xinetd.daliases                  chrony.conf   default                  filesystems    gshadow-     kdump.conf    ...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">二博</div><div class="author-info-description">生活不止有工作</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">75</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">30</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/chobon8"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/chobon8" target="_blank" title="Github"><i class="fa-brands fa-github"></i></a><a class="social-icon" href="mailto:chobon@aliyun.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="/atom.xml" target="_blank" title="RSS"><i class="fas fa-rss"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#kvm%E7%9B%B8%E5%85%B3%E4%BE%9D%E8%B5%96%E5%8C%85%E5%92%8C%E4%BD%9C%E7%94%A8"><span class="toc-number">2.</span> <span class="toc-text">kvm相关依赖包和作用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A3%80%E6%B5%8B%E6%98%AF%E5%90%A6%E6%94%AF%E6%8C%81KVM"><span class="toc-number">3.</span> <span class="toc-text">检测是否支持KVM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-number">4.</span> <span class="toc-text">安装虚拟机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E6%8C%87%E4%BB%A4"><span class="toc-number">5.</span> <span class="toc-text">常用指令</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/705c9884/" title="Linux磁盘坏道检测和修复"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-125399.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux磁盘坏道检测和修复"/></a><div class="content"><a class="title" href="/posts/705c9884/" title="Linux磁盘坏道检测和修复">Linux磁盘坏道检测和修复</a><time datetime="2025-10-05T12:46:58.000Z" title="发表于 2025-10-05 20:46:58">2025-10-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/dfeb25f1/" title="Proxmox上LXC磁盘缩小"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-48960.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Proxmox上LXC磁盘缩小"/></a><div class="content"><a class="title" href="/posts/dfeb25f1/" title="Proxmox上LXC磁盘缩小">Proxmox上LXC磁盘缩小</a><time datetime="2024-05-15T11:46:58.000Z" title="发表于 2024-05-15 19:46:58">2024-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/a594add/" title="RKE搭建Kubernetes集群环境"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RKE搭建Kubernetes集群环境"/></a><div class="content"><a class="title" href="/posts/a594add/" title="RKE搭建Kubernetes集群环境">RKE搭建Kubernetes集群环境</a><time datetime="2022-03-08T14:22:08.000Z" title="发表于 2022-03-08 22:22:08">2022-03-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/bc681fc7/" title="Ubuntu安装Docker"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/Docker_Logo.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Ubuntu安装Docker"/></a><div class="content"><a class="title" href="/posts/bc681fc7/" title="Ubuntu安装Docker">Ubuntu安装Docker</a><time datetime="2021-12-02T15:07:41.000Z" title="发表于 2021-12-02 23:07:41">2021-12-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/da975915/" title="V2ray更新gRPC"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="V2ray更新gRPC"/></a><div class="content"><a class="title" href="/posts/da975915/" title="V2ray更新gRPC">V2ray更新gRPC</a><time datetime="2021-11-30T10:15:45.000Z" title="发表于 2021-11-30 18:15:45">2021-11-30</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By 二博</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.3</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/"></script><script src="https://cdn.staticfile.org/instant.page/5.2.0/instantpage.min.js" type="module"></script><script src="https://cdn.staticfile.org/vanilla-lazyload/19.1.3/lazyload.iife.min.js"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.staticfile.org/KaTeX/0.16.21/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.staticfile.org/KaTeX/0.16.21/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.staticfile.org/mermaid/11.4.1/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"data-mapping":"pathname","data-strict":1,"data-reactions-enabled":1,"data-emit-metadata":1,"data-input-position":"top","data-lang":"zh-CN","data-loading":"lazy","crossorigin":"anonymous"}
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'chobon8/chobon8.github.io',
+      'data-repo-id': 'MDEwOlJlcG9zaXRvcnkyMTk3ODU1Njk=',
+      'data-category-id': 'DIC_kwDODRmpYc4CR2Ca',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !true) {
+    if (true) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="2201879658" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"></div><link rel="stylesheet" href="https://cdn.staticfile.org/aplayer/1.10.1/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.staticfile.org/aplayer/1.10.1/APlayer.min.js"></script><script src="https://cdn.staticfile.org/butterfly-extsrc/1.1.4/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.staticfile.org/pjax/0.2.8/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

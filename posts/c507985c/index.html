@@ -1,0 +1,476 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Abp vNext源码分析-多租户模块 | 二博</title><meta name="author" content="二博"><meta name="copyright" content="二博"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="多租户抽象租户对象 ICurrentTenant : 当前租户 ICurrentTenantAccessor : 当前租户访问器 BasicTenantInfo : 租户实际对象  租户存储ITenantStore是多租户抽象数据源，可以实现ITenantStore，存储租户数据源  ITenantStore : 多租户存储   存储接口  12345678910public interface">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Abp vNext源码分析-多租户模块">
+<meta property="og:url" content="https://blog.chobon.top/posts/c507985c/index.html">
+<meta property="og:site_name" content="二博">
+<meta property="og:description" content="多租户抽象租户对象 ICurrentTenant : 当前租户 ICurrentTenantAccessor : 当前租户访问器 BasicTenantInfo : 租户实际对象  租户存储ITenantStore是多租户抽象数据源，可以实现ITenantStore，存储租户数据源  ITenantStore : 多租户存储   存储接口  12345678910public interface">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img.chobon.top/blog/cover/wallpaper-200244.jpg">
+<meta property="article:published_time" content="2020-08-06T01:23:18.000Z">
+<meta property="article:modified_time" content="2025-10-05T13:49:10.349Z">
+<meta property="article:author" content="二博">
+<meta property="article:tag" content="AspNetCore">
+<meta property="article:tag" content=".NET">
+<meta property="article:tag" content="ABP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.chobon.top/blog/cover/wallpaper-200244.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Abp vNext源码分析-多租户模块",
+  "url": "https://blog.chobon.top/posts/c507985c/",
+  "image": "https://img.chobon.top/blog/cover/wallpaper-200244.jpg",
+  "datePublished": "2020-08-06T01:23:18.000Z",
+  "dateModified": "2025-10-05T13:49:10.349Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "二博",
+      "url": "https://blog.chobon.top/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://img.chobon.top/blog/img/favicon.ico"><link rel="canonical" href="https://blog.chobon.top/posts/c507985c/index.html"><link rel="preconnect" href="https://cdn.staticfile.org"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'true',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.staticfile.org/egjs-infinitegrid/4.12.0/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Abp vNext源码分析-多租户模块',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><style type="text/css">.card-announcement .social-button{margin:.6rem 0 0 0;text-align:center}.card-announcement .social-button a{display:block;background-color:var(--btn-bg);color:var(--btn-color);text-align:center;line-height:2.4;margin:4px 0}.card-announcement .social-button a:hover{background-color:var(--btn-hover-color)}</style><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="二博" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">75</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">30</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-heart"></i><span> 豆瓣</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-film"></i><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw fas fa-book"></i><span> 书单</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 更多</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://img.chobon.top/blog/cover/wallpaper-200244.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">二博</span></a><a class="nav-page-title" href="/"><span class="site-name">Abp vNext源码分析-多租户模块</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-heart"></i><span> 豆瓣</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-film"></i><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw fas fa-book"></i><span> 书单</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 更多</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></li></ul></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Abp vNext源码分析-多租户模块</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-08-06T01:23:18.000Z" title="发表于 2020-08-06 09:23:18">2020-08-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-10-05T13:49:10.349Z" title="更新于 2025-10-05 21:49:10">2025-10-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/NET/">.NET</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/NET/AspNetCore/">AspNetCore</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/NET/ABP/">ABP</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="多租户抽象"><a href="#多租户抽象" class="headerlink" title="多租户抽象"></a>多租户抽象</h2><h3 id="租户对象"><a href="#租户对象" class="headerlink" title="租户对象"></a>租户对象</h3><ul>
+<li><code>ICurrentTenant</code> : 当前租户</li>
+<li><code>ICurrentTenantAccessor</code> : 当前租户访问器</li>
+<li><code>BasicTenantInfo</code> : 租户实际对象</li>
+</ul>
+<h3 id="租户存储"><a href="#租户存储" class="headerlink" title="租户存储"></a>租户存储</h3><p><code>ITenantStore</code>是多租户抽象数据源，可以实现ITenantStore，存储租户数据源</p>
+<ul>
+<li><code>ITenantStore</code> : 多租户存储</li>
+</ul>
+<blockquote>
+<p>存储接口</p>
+</blockquote>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title">ITenantStore</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function">Task&lt;TenantConfiguration&gt; <span class="title">FindAsync</span>(<span class="params"><span class="built_in">string</span> name</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Task&lt;TenantConfiguration&gt; <span class="title">FindAsync</span>(<span class="params">Guid id</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">TenantConfiguration <span class="title">Find</span>(<span class="params"><span class="built_in">string</span> name</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">TenantConfiguration <span class="title">Find</span>(<span class="params">Guid id</span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置数据存储"><a href="#配置数据存储" class="headerlink" title="配置数据存储"></a>配置数据存储</h4><p>默认从配置文件中读取信息作为多租户存储</p>
+<ul>
+<li><code>DefaultTenantStore</code> : 从配置文件中读取多租户信息</li>
+</ul>
+<blockquote>
+<p>配置对应选项类</p>
+</blockquote>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">AbpDefaultTenantStoreOptions</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 对应配置文件Tenants节点</span></span><br><span class="line">    <span class="keyword">public</span> TenantConfiguration[] Tenants &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AbpDefaultTenantStoreOptions</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        Tenants = <span class="keyword">new</span> TenantConfiguration[<span class="number">0</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>配置文件示例</p>
+</blockquote>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;Tenants&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">      <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;Id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;446a5211-3d72-4339-9adc-845151f8ada0&quot;</span><span class="punctuation">,</span> </span><br><span class="line">        <span class="attr">&quot;Name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;tenant1&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;Id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;25388015-ef1c-4355-9c18-f6b6ddbaf89d&quot;</span><span class="punctuation">,</span> <span class="comment">// 租户的唯一Id</span></span><br><span class="line">        <span class="attr">&quot;Name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;tenant2&quot;</span><span class="punctuation">,</span> <span class="comment">// 租户的唯一名称</span></span><br><span class="line">        <span class="attr">&quot;ConnectionStrings&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="comment">// 如果这个租户有专门的数据库来存储数据.它可以提供数据库的字符串(它可以具有默认的连接字符串和每个模块的连接字符串).</span></span><br><span class="line">          <span class="attr">&quot;Default&quot;</span><span class="punctuation">:</span> <span class="string">&quot;...write tenant2&#x27;s db connection string here...&quot;</span></span><br><span class="line">        <span class="punctuation">&#125;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="租户信息"><a href="#租户信息" class="headerlink" title="租户信息"></a>租户信息</h3><p><code>ITenantStore</code>跟<code>TenantConfiguration</code>类一起工作,并且包含了几个租户属性:</p>
+<ul>
+<li><code>Tenant</code> : 多租户领域聚合根</li>
+<li><code>TenantConnectionString</code> : 多租户连接字符串实体</li>
+<li><code>Id</code> : 租户的唯一Id.</li>
+<li><code>Name</code> : 租户的唯一名称.</li>
+<li><code>ConnectionStrings</code>: 如果这个租户有专门的数据库来存储数据.它可以提供数据库的字符串(它可以具有默认的连接字符串和每个模块的连接字符串).</li>
+</ul>
+<p>多租户应用程序可能需要其他租户属性,但这些属性是框架与多个租户一起使用的最低要求.</p>
+<h3 id="租户解析"><a href="#租户解析" class="headerlink" title="租户解析"></a>租户解析</h3><h4 id="抽象定义"><a href="#抽象定义" class="headerlink" title="抽象定义"></a>抽象定义</h4><ul>
+<li><code>ITenantResolver</code> : 租户解析器</li>
+<li><code>ITenantResolveContext</code> : 租户解析上下文</li>
+<li><code>ITenantResolveContributor</code> : 租户解析提供者</li>
+<li><code>ITenantResolveResultAccessor</code> : 租户解析结果访问器</li>
+<li><code>TenantResolveResult</code> : 租户解析结果</li>
+</ul>
+<blockquote>
+<p>租户解析器</p>
+</blockquote>
+<h4 id="默认解析器"><a href="#默认解析器" class="headerlink" title="默认解析器"></a>默认解析器</h4><ul>
+<li><code>TenantResolveContributorBase</code> : 解析提供者抽象类</li>
+</ul>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title">TenantResolveContributorBase</span> : <span class="title">ITenantResolveContributor</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="built_in">string</span> Name &#123; <span class="keyword">get</span>; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//<span class="doctag">TODO:</span> We can make this async</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">Resolve</span>(<span class="params">ITenantResolveContext context</span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>CurrentUserTenantResolveContributor</code> : 当前用户解析器</li>
+<li><code>ActionTenantResolveContributor</code> : 委托解析器，方便开发人员直接在AbpTenantResolveOptions添加设置租户信息逻辑</li>
+</ul>
+<blockquote>
+<p>示例代码</p>
+</blockquote>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Configure&lt;AbpTenantResolveOptions&gt;(options =&gt;</span><br><span class="line">&#123;</span><br><span class="line">    options.TenantResolvers.Add(<span class="keyword">new</span> ActionTenantResolveContributor(context =&gt; </span><br><span class="line">    &#123;</span><br><span class="line">          context.TenantIdOrName = ... <span class="comment">//从其他地方获取租户id或租户名字...</span></span><br><span class="line">    &#125;))</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p><code>Volo.Abp.AspNetCore.MultiTenancy</code>包内实现了多种租户解析器，从当前Web请求(从子域名,请求头,cookie,路由…等</p>
+<h2 id="多租户Web实现"><a href="#多租户Web实现" class="headerlink" title="多租户Web实现"></a>多租户Web实现</h2><h3 id="多租户中间件"><a href="#多租户中间件" class="headerlink" title="多租户中间件"></a>多租户中间件</h3><ul>
+<li><code>MultiTenancyMiddleware</code> : 多租户中间件</li>
+</ul>
+<blockquote>
+<p>多租户中间件</p>
+</blockquote>
+<p>负责解析租户信息，依次从解析方法提供者中解析</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">async</span> Task <span class="title">InvokeAsync</span>(<span class="params">HttpContext context, RequestDelegate next</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">var</span> resolveResult = _tenantResolver.ResolveTenantIdOrName();</span><br><span class="line">    _tenantResolveResultAccessor.Result = resolveResult;</span><br><span class="line"></span><br><span class="line">    TenantConfiguration tenant = <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">if</span> (resolveResult.TenantIdOrName != <span class="literal">null</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        tenant = <span class="keyword">await</span> FindTenantAsync(resolveResult.TenantIdOrName);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (tenant == <span class="literal">null</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BusinessException(</span><br><span class="line">                code: <span class="string">&quot;Volo.AbpIo.MultiTenancy:010001&quot;</span>,</span><br><span class="line">                message: <span class="string">&quot;Tenant not found!&quot;</span>,</span><br><span class="line">                details: <span class="string">&quot;There is no tenant with the tenant id or name: &quot;</span> + resolveResult.TenantIdOrName</span><br><span class="line">            );</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">using</span> (_currentTenant.Change(tenant?.Id, tenant?.Name))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">await</span> next(context);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="租户解析器"><a href="#租户解析器" class="headerlink" title="租户解析器"></a>租户解析器</h3><ul>
+<li><code>HttpTenantResolveContributorBase</code> : Web租户解析器抽象类</li>
+</ul>
+<p><code>Volo.Abp.AspNetCore.MultiTenancy</code> 实现了多种租户解析器,从当前Web请求(按优先级排序)中确定当前租户.</p>
+<ul>
+<li><code>CurrentUserTenantResolveContributor</code> : 当前用户解析器（基础模块中实现），如果当前用户已登录,从当前用户的声明中获取租户Id. <strong>出于安全考虑,应该始终将其做为第一个Contributor</strong>.</li>
+<li><code>QueryTenantResolveContributor</code> : 查询租户解析器，尝试从query string参数中获取当前租户,默认参数名为”__tenant”.</li>
+<li><code>RouteTenantResolveContributor</code> : 路由租户解析器，尝试从当前路由中获取(URL路径),默认是变量名是”__tenant”.所以,如果你的路由中定义了这个变量,就可以从路由中确定当前租户.</li>
+<li><code>HeaderTenantResolveContributor</code> : 请求头租户解析器，尝试从HTTP header中获取当前租户,默认的header名称是”__tenant”.</li>
+<li><code>CookieTenantResolveContributor</code> : Cookie租户解析器，通过Cookie中取当前租户值，默认的Cookie名称是”__tenant”.</li>
+</ul>
+<p>可以通过配置文件类<code>AbpAspNetCoreMultiTenancyOptions</code>来更改参数名”__tenant”</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">services.Configure&lt;AbpAspNetCoreMultiTenancyOptions&gt;(options =&gt;</span><br><span class="line">&#123;</span><br><span class="line">    options.TenantKey = <span class="string">&quot;MyTenantKey&quot;</span>;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h4 id="域名租户解析器"><a href="#域名租户解析器" class="headerlink" title="域名租户解析器"></a>域名租户解析器</h4><p>实际项目中,大多数情况下你想通过子域名(如mytenant1.mydomain.com)或全域名(如mytenant.com)中确定当前租户.如果是这样,你可以配置AbpTenantResolveOptions添加一个域名租户解析器.</p>
+<ul>
+<li><code>DomainTenantResolveContributor</code> : 域名租户解析器</li>
+</ul>
+<h5 id="添加子域名解析器"><a href="#添加子域名解析器" class="headerlink" title="添加子域名解析器"></a>添加子域名解析器</h5><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> Microsoft.Extensions.DependencyInjection;</span><br><span class="line"><span class="keyword">using</span> Volo.Abp.AspNetCore.MultiTenancy;</span><br><span class="line"><span class="keyword">using</span> Volo.Abp.Modularity;</span><br><span class="line"><span class="keyword">using</span> Volo.Abp.MultiTenancy;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">MyCompany.MyProject</span></span><br><span class="line">&#123;</span><br><span class="line">    [<span class="meta">DependsOn(typeof(AbpAspNetCoreMultiTenancyModule))</span>]</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">class</span> <span class="title">MyModule</span> : <span class="title">AbpModule</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">ConfigureServices</span>(<span class="params">ServiceConfigurationContext context</span>)</span></span><br><span class="line">        &#123;</span><br><span class="line">            Configure&lt;AbpTenantResolveOptions&gt;(options =&gt;</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="comment">//子域名格式: &#123;0&#125;.mydomain.com (作为第二优先级解析器添加, 位于CurrentUserTenantResolveContributor之后)</span></span><br><span class="line">                options.TenantResolvers.Insert(<span class="number">1</span>, <span class="keyword">new</span> DomainTenantResolveContributor(<span class="string">&quot;&#123;0&#125;.mydomain.com&quot;</span>));</span><br><span class="line">            &#125;);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//...</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>多租户基础模块里默认添加CurrentUserTenantResolveContributor，如果使用<code>Volo.Abp.AspNetCore.MultiTenancy</code>模块包，则会添加上述几个解析器。</p>
+<p>根据不同的需求可以在实际使用切换不同的解析器</p>
+<h2 id="多租户模块实现"><a href="#多租户模块实现" class="headerlink" title="多租户模块实现"></a>多租户模块实现</h2><p>Abp框架提供了多个模块，TenantManagement就是其中之一，该模块提供了多租户的创建，存储，修改等功能的实现</p>
+<h3 id="多租户存储数据库持久化"><a href="#多租户存储数据库持久化" class="headerlink" title="多租户存储数据库持久化"></a>多租户存储数据库持久化</h3><ul>
+<li><code>TenantManager</code> : 多租户的领域服务，提供创建和修改业务</li>
+<li><code>ITenantRepository</code> : 多租户的领域仓储，提供持久化实现</li>
+<li><code>TenantStore</code> : 多租户存储实现</li>
+</ul>
+<blockquote>
+<p>TenantManager</p>
+</blockquote>
+<p>将涉及到仓储对象和领域对象的复杂业务放在领域服务中，再通过应用服务暴露给其他模块</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">TenantManager</span> : <span class="title">DomainService</span>, <span class="title">ITenantManager</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">protected</span> ITenantRepository TenantRepository &#123; <span class="keyword">get</span>; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">TenantManager</span>(<span class="params">ITenantRepository tenantRepository</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        TenantRepository = tenantRepository;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">async</span> Task&lt;Tenant&gt; <span class="title">CreateAsync</span>(<span class="params"><span class="built_in">string</span> name</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        Check.NotNull(name, <span class="keyword">nameof</span>(name));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">await</span> ValidateNameAsync(name);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Tenant(GuidGenerator.Create(), name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">async</span> Task <span class="title">ChangeNameAsync</span>(<span class="params">Tenant tenant, <span class="built_in">string</span> name</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        Check.NotNull(tenant, <span class="keyword">nameof</span>(tenant));</span><br><span class="line">        Check.NotNull(name, <span class="keyword">nameof</span>(name));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">await</span> ValidateNameAsync(name, tenant.Id);</span><br><span class="line">        tenant.SetName(name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">virtual</span> <span class="keyword">async</span> Task <span class="title">ValidateNameAsync</span>(<span class="params"><span class="built_in">string</span> name, Guid? expectedId = <span class="literal">null</span></span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">var</span> tenant = <span class="keyword">await</span> TenantRepository.FindByNameAsync(name);</span><br><span class="line">        <span class="keyword">if</span> (tenant != <span class="literal">null</span> &amp;&amp; tenant.Id != expectedId)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> UserFriendlyException(<span class="string">&quot;Duplicate tenancy name: &quot;</span> + name); <span class="comment">//<span class="doctag">TODO:</span> A domain exception would be better..?</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>TenantStore</p>
+</blockquote>
+<p>基于数据库实现ITenantStore</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">TenantStore</span> : <span class="title">ITenantStore</span>, <span class="title">ITransientDependency</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">protected</span> ITenantRepository TenantRepository &#123; <span class="keyword">get</span>; &#125;</span><br><span class="line">    <span class="keyword">protected</span> IObjectMapper&lt;AbpTenantManagementDomainModule&gt; ObjectMapper &#123; <span class="keyword">get</span>; &#125;</span><br><span class="line">    <span class="keyword">protected</span> ICurrentTenant CurrentTenant &#123; <span class="keyword">get</span>; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">TenantStore</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="function">        ITenantRepository tenantRepository, </span></span></span><br><span class="line"><span class="params"><span class="function">        IObjectMapper&lt;AbpTenantManagementDomainModule&gt; objectMapper,</span></span></span><br><span class="line"><span class="params"><span class="function">        ICurrentTenant currentTenant</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        TenantRepository = tenantRepository;</span><br><span class="line">        ObjectMapper = objectMapper;</span><br><span class="line">        CurrentTenant = currentTenant;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">virtual</span> <span class="keyword">async</span> Task&lt;TenantConfiguration&gt; <span class="title">FindAsync</span>(<span class="params"><span class="built_in">string</span> name</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">using</span> (CurrentTenant.Change(<span class="literal">null</span>)) <span class="comment">//<span class="doctag">TODO:</span> No need this if we can implement to define host side (or tenant-independent) entities!</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">var</span> tenant = <span class="keyword">await</span> TenantRepository.FindByNameAsync(name);</span><br><span class="line">            <span class="keyword">if</span> (tenant == <span class="literal">null</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> ObjectMapper.Map&lt;Tenant, TenantConfiguration&gt;(tenant);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 后续代码省略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://blog.chobon.top">二博</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://blog.chobon.top/posts/c507985c/">https://blog.chobon.top/posts/c507985c/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://blog.chobon.top" target="_blank">二博</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AspNetCore/">AspNetCore</a><a class="post-meta__tags" href="/tags/NET/">.NET</a><a class="post-meta__tags" href="/tags/ABP/">ABP</a></div><div class="post-share"><div class="social-share" data-image="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.staticfile.org/butterfly-extsrc/1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.staticfile.org/butterfly-extsrc/1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img.chobon.top/blog/img/wechat.png" target="_blank"><img class="post-qr-code-img" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/wechat.png" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img.chobon.top/blog/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/alipay.jpg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/585b74ea/" title="Abp vNext源码分析-功能模块和权限模块"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Abp vNext源码分析-功能模块和权限模块</div></div><div class="info-2"><div class="info-item-1">功能模块功能管理-FeatureManagement是在多租户应用程序中使用，检查定义的功能是否对当前租户有效，功能是否启用。Abp系统功能定义，类似于权限功能一种延伸。  FeatureDefinition : 功能定义  FeatureGroupDefinition : 功能组定义  FeatureValue : 功能值，记录功能是否可用  IFeatureValueProvider : 功能值提供器，负责检查功能是否可用。   一般会结合功能存储IFeatureStore使用 12345678910111213public abstract class FeatureValueProvider : IFeatureValueProvider, ITransientDependency&#123;    public abstract string Name &#123; get; &#125;    protected IFeatureStore FeatureStore &#123; get; &#125;    protected...</div></div></div></a><a class="pagination-related" href="/posts/8b9289f/" title="Ubuntu 20.04上搭建vpn服务器"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-48960.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Ubuntu 20.04上搭建vpn服务器</div></div><div class="info-2"><div class="info-item-1">OpenVPNOpenVPN 是一个基于 OpenSSL 库的应用层 VPN 实现。和传统 VPN 相比，它的优点是简单易用。OpenVPN能在Solaris、Linux、OpenBSD、FreeBSD、NetBSD、Mac OS X与Windows 2000&#x2F;XP&#x2F;Vista上运行，并包含了许多安全性的功能。 OpenVPN服务端 更新系统包  1root@ubuntu:~# sudo apt update &amp;&amp; apt upgrade  查看主机网卡和公网IP 查看主机网卡  1234567891011121314151617181920root@ubuntu:~# ip a1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00    inet 127.0.0.1/8 scope host...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/585b74ea/" title="Abp vNext源码分析-功能模块和权限模块"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2020-08-04</div><div class="info-item-2">Abp vNext源码分析-功能模块和权限模块</div></div><div class="info-2"><div class="info-item-1">功能模块功能管理-FeatureManagement是在多租户应用程序中使用，检查定义的功能是否对当前租户有效，功能是否启用。Abp系统功能定义，类似于权限功能一种延伸。  FeatureDefinition : 功能定义  FeatureGroupDefinition : 功能组定义  FeatureValue : 功能值，记录功能是否可用  IFeatureValueProvider : 功能值提供器，负责检查功能是否可用。   一般会结合功能存储IFeatureStore使用 12345678910111213public abstract class FeatureValueProvider : IFeatureValueProvider, ITransientDependency&#123;    public abstract string Name &#123; get; &#125;    protected IFeatureStore FeatureStore &#123; get; &#125;    protected...</div></div></div></a><a class="pagination-related" href="/posts/226186c6/" title="ASP.NET Core MVC 5.x初始化源码解读（一）"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-01</div><div class="info-item-2">ASP.NET Core MVC 5.x初始化源码解读（一）</div></div><div class="info-2"><div class="info-item-1">前言初始化比较复杂，文章拆分成3部分Host、WebHost、Startup，逐一分析 对象概念解释 接口定义   IHost : 主机抽象  IServiceProvider : 对象服务提供器 StartAsync : 启动方法 StopAsync : 停止方法   IHostBuilder : 主机构造器抽象  ConfigureHostConfiguration() : 配置主机配置文件 ConfigureAppConfiguration() : 配置应用配置文件 ConfigureServices() : 配置服务 UseServiceProviderFactory() : 配置服务提供商工厂 ConfigureContainer() : 配置容器 Build() : 构造主机     具体实现   Host : 主机  IHostLifetime : 主机生命周期 IServiceProvider : 服务提供商 ApplicationLifetime : 应用生命周期 HostOptions :...</div></div></div></a><a class="pagination-related" href="/posts/329c39bd/" title="ASP.NET Core MVC 5.x初始化源码解读（二）"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-48960.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-01</div><div class="info-item-2">ASP.NET Core MVC 5.x初始化源码解读（二）</div></div><div class="info-2"><div class="info-item-1">WebHost对象概念解释WebHost  接口定义   IWebHost : 主机抽象  IFeatureCollection : 插件容器 IServiceProvider : 对象服务提供器 Start : 启动方法（同步） StartAsync : 启动方法 StopAsync : 停止方法   IWebHostBuilder : 网站主机构建器  Build : 构建 ConfigureAppConfiguration : 配置应用配置文件 ConfigureServices : 配置服务 GetSetting : 读取单个配置值 UseSetting : 设置单个配置项     具体实现   GenericWebHostBuilder : 通用网站主机构造器（HostBuilder桥接器）  ConfigureHostConfiguration : 设置主机配置 ConfigureAppConfiguration : 设置应用配置 ConfigureServices : 设置服务 UseStartup :...</div></div></div></a><a class="pagination-related" href="/posts/c29cb869/" title="ASP.NET Core MVC 源码解读-应用程序模型"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-48960.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-04-16</div><div class="info-item-2">ASP.NET Core MVC 源码解读-应用程序模型</div></div><div class="info-2"><div class="info-item-1">概念ASP.NET Core MVC 会定义一个 应用程序模型，用于表示 MVC 应用的各个组件。 读取并处理此模型，以修改 MVC 元素的行为方式。 默认情况下，MVC 遵循特定的约定来确定哪些类被视为控制器、这些类上的哪些方法是操作以及参数和路由的行为方式。 自定义此行为以满足应用程序的需求，方法是创建自定义约定，并将其作为全局或特性应用。 模型(Model)和程序提供器(Provider) 对象模型(Model)  ASP.NET Core MVC 应用程序模型包括用于描述 MVC 应用程序的抽象接口和具体实现类。 此模型是 MVC 根据默认约定发现应用的控制器、操作、操作参数、路由和筛选器的结果。 通过使用应用程序模型，修改应用以遵循默认 MVC 行为中的不同约定。 参数、名称、路由和筛选器都用作操作和控制器的配置数据。ASP.NET Core MVC 应用程序模型具有以下结构：  ApplicationModel 控制器 (ControllerModel) 属性 (PropertyModel)   操作 (ActionModel) 参数...</div></div></div></a><a class="pagination-related" href="/posts/fb967bcd/" title="AspNetCore管道机制"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-48960.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2020-04-14</div><div class="info-item-2">AspNetCore管道机制</div></div><div class="info-2"><div class="info-item-1">Middleware理解Applicationbuilder维护着一个中间件集合 1private readonly IList&lt;Func&lt;RequestDelegate, RequestDelegate&gt;&gt; _components = new List&lt;Func&lt;RequestDelegate, RequestDelegate&gt;&gt;();  本质都是是往ApplicationBuilder对象的_components成员里添加中间件Func&lt;RequestDelegate, RequestDelegate&gt; 123public delegate Task RequestDelegate(HttpContext context);private readonly IList&lt;Func&lt;RequestDelegate, RequestDelegate&gt;&gt;...</div></div></div></a><a class="pagination-related" href="/posts/6111e7af/" title="EventBus学习"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2019-12-12</div><div class="info-item-2">EventBus学习</div></div><div class="info-2"><div class="info-item-1">EventBus介绍EventBus 是一种事件发布订阅模式（观察者模式），通过 EventBus 我们可以很方便的实现解耦，将事件的发起和事件的处理的很好的分隔开来，很好的实现解耦。 微软官方的示例项目 EShopOnContainers 也有在使用 EventBus 。  发布订阅模式    这里的 EventBus 实现也是参考借鉴了微软 eShopOnContainers 项目。  在微服务中运用   EventBus整体架构 结构图    IEventBase : 事件消息定义接口，所有事件消息都继承这个接口，这个接口定义了事件消息唯一Id EventId 和事件消息发生时间 EventAt 。  IEventBase 123456public interface IEventBase&#123;    string EventId &#123; get; &#125;    DateTimeOffset EventAt &#123; get; &#125;&#125;   IEventHandler : 定义了一个 Handle...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">二博</div><div class="author-info-description">生活不止有工作</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">75</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">30</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/chobon8"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/chobon8" target="_blank" title="Github"><i class="fa-brands fa-github"></i></a><a class="social-icon" href="mailto:chobon@aliyun.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="/atom.xml" target="_blank" title="RSS"><i class="fas fa-rss"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%A7%9F%E6%88%B7%E6%8A%BD%E8%B1%A1"><span class="toc-number">1.</span> <span class="toc-text">多租户抽象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A7%9F%E6%88%B7%E5%AF%B9%E8%B1%A1"><span class="toc-number">1.1.</span> <span class="toc-text">租户对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A7%9F%E6%88%B7%E5%AD%98%E5%82%A8"><span class="toc-number">1.2.</span> <span class="toc-text">租户存储</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8"><span class="toc-number">1.2.1.</span> <span class="toc-text">配置数据存储</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A7%9F%E6%88%B7%E4%BF%A1%E6%81%AF"><span class="toc-number">1.3.</span> <span class="toc-text">租户信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A7%9F%E6%88%B7%E8%A7%A3%E6%9E%90"><span class="toc-number">1.4.</span> <span class="toc-text">租户解析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8A%BD%E8%B1%A1%E5%AE%9A%E4%B9%89"><span class="toc-number">1.4.1.</span> <span class="toc-text">抽象定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%BB%98%E8%AE%A4%E8%A7%A3%E6%9E%90%E5%99%A8"><span class="toc-number">1.4.2.</span> <span class="toc-text">默认解析器</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%A7%9F%E6%88%B7Web%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">多租户Web实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E7%A7%9F%E6%88%B7%E4%B8%AD%E9%97%B4%E4%BB%B6"><span class="toc-number">2.1.</span> <span class="toc-text">多租户中间件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A7%9F%E6%88%B7%E8%A7%A3%E6%9E%90%E5%99%A8"><span class="toc-number">2.2.</span> <span class="toc-text">租户解析器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%9F%E5%90%8D%E7%A7%9F%E6%88%B7%E8%A7%A3%E6%9E%90%E5%99%A8"><span class="toc-number">2.2.1.</span> <span class="toc-text">域名租户解析器</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0%E5%AD%90%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E5%99%A8"><span class="toc-number">2.2.1.1.</span> <span class="toc-text">添加子域名解析器</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%A7%9F%E6%88%B7%E6%A8%A1%E5%9D%97%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.</span> <span class="toc-text">多租户模块实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E7%A7%9F%E6%88%B7%E5%AD%98%E5%82%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-number">3.1.</span> <span class="toc-text">多租户存储数据库持久化</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/705c9884/" title="Linux磁盘坏道检测和修复"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-125399.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux磁盘坏道检测和修复"/></a><div class="content"><a class="title" href="/posts/705c9884/" title="Linux磁盘坏道检测和修复">Linux磁盘坏道检测和修复</a><time datetime="2025-10-05T12:46:58.000Z" title="发表于 2025-10-05 20:46:58">2025-10-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/dfeb25f1/" title="Proxmox上LXC磁盘缩小"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-48960.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Proxmox上LXC磁盘缩小"/></a><div class="content"><a class="title" href="/posts/dfeb25f1/" title="Proxmox上LXC磁盘缩小">Proxmox上LXC磁盘缩小</a><time datetime="2024-05-15T11:46:58.000Z" title="发表于 2024-05-15 19:46:58">2024-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/a594add/" title="RKE搭建Kubernetes集群环境"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RKE搭建Kubernetes集群环境"/></a><div class="content"><a class="title" href="/posts/a594add/" title="RKE搭建Kubernetes集群环境">RKE搭建Kubernetes集群环境</a><time datetime="2022-03-08T14:22:08.000Z" title="发表于 2022-03-08 22:22:08">2022-03-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/bc681fc7/" title="Ubuntu安装Docker"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/Docker_Logo.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Ubuntu安装Docker"/></a><div class="content"><a class="title" href="/posts/bc681fc7/" title="Ubuntu安装Docker">Ubuntu安装Docker</a><time datetime="2021-12-02T15:07:41.000Z" title="发表于 2021-12-02 23:07:41">2021-12-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/da975915/" title="V2ray更新gRPC"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="V2ray更新gRPC"/></a><div class="content"><a class="title" href="/posts/da975915/" title="V2ray更新gRPC">V2ray更新gRPC</a><time datetime="2021-11-30T10:15:45.000Z" title="发表于 2021-11-30 18:15:45">2021-11-30</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By 二博</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.3</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/"></script><script src="https://cdn.staticfile.org/instant.page/5.2.0/instantpage.min.js" type="module"></script><script src="https://cdn.staticfile.org/vanilla-lazyload/19.1.3/lazyload.iife.min.js"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.staticfile.org/KaTeX/0.16.21/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.staticfile.org/KaTeX/0.16.21/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.staticfile.org/mermaid/11.4.1/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"data-mapping":"pathname","data-strict":1,"data-reactions-enabled":1,"data-emit-metadata":1,"data-input-position":"top","data-lang":"zh-CN","data-loading":"lazy","crossorigin":"anonymous"}
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'chobon8/chobon8.github.io',
+      'data-repo-id': 'MDEwOlJlcG9zaXRvcnkyMTk3ODU1Njk=',
+      'data-category-id': 'DIC_kwDODRmpYc4CR2Ca',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !true) {
+    if (true) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="2201879658" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"></div><link rel="stylesheet" href="https://cdn.staticfile.org/aplayer/1.10.1/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.staticfile.org/aplayer/1.10.1/APlayer.min.js"></script><script src="https://cdn.staticfile.org/butterfly-extsrc/1.1.4/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.staticfile.org/pjax/0.2.8/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

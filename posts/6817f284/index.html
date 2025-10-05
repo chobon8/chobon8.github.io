@@ -1,0 +1,498 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>记学习Moq框架（二） | 二博</title><meta name="author" content="二博"><meta name="copyright" content="二博"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="记学习Moq框架（一），上一篇简单讲解了用法，这篇深入讲解用法 应用场景示例1234567891011121314public interface IProductService&#123;    void Add(Product product);    Task AddAsync(Product product);    void Delete(string id);    Task Dele">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记学习Moq框架（二）">
+<meta property="og:url" content="https://blog.chobon.top/posts/6817f284/index.html">
+<meta property="og:site_name" content="二博">
+<meta property="og:description" content="记学习Moq框架（一），上一篇简单讲解了用法，这篇深入讲解用法 应用场景示例1234567891011121314public interface IProductService&#123;    void Add(Product product);    Task AddAsync(Product product);    void Delete(string id);    Task Dele">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img.chobon.top/blog/cover/wallpaper-200244.jpg">
+<meta property="article:published_time" content="2019-11-11T15:46:58.000Z">
+<meta property="article:modified_time" content="2025-10-05T13:49:10.353Z">
+<meta property="article:author" content="二博">
+<meta property="article:tag" content=".NET">
+<meta property="article:tag" content="Moq">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.chobon.top/blog/cover/wallpaper-200244.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "记学习Moq框架（二）",
+  "url": "https://blog.chobon.top/posts/6817f284/",
+  "image": "https://img.chobon.top/blog/cover/wallpaper-200244.jpg",
+  "datePublished": "2019-11-11T15:46:58.000Z",
+  "dateModified": "2025-10-05T13:49:10.353Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "二博",
+      "url": "https://blog.chobon.top/"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://img.chobon.top/blog/img/favicon.ico"><link rel="canonical" href="https://blog.chobon.top/posts/6817f284/index.html"><link rel="preconnect" href="https://cdn.staticfile.org"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/6.7.2/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'true',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.staticfile.org/egjs-infinitegrid/4.12.0/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '记学习Moq框架（二）',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><style type="text/css">.card-announcement .social-button{margin:.6rem 0 0 0;text-align:center}.card-announcement .social-button a{display:block;background-color:var(--btn-bg);color:var(--btn-color);text-align:center;line-height:2.4;margin:4px 0}.card-announcement .social-button a:hover{background-color:var(--btn-hover-color)}</style><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/atom.xml" title="二博" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">75</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">30</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-heart"></i><span> 豆瓣</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-film"></i><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw fas fa-book"></i><span> 书单</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 更多</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://img.chobon.top/blog/cover/wallpaper-200244.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">二博</span></a><a class="nav-page-title" href="/"><span class="site-name">记学习Moq框架（二）</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-heart"></i><span> 豆瓣</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-film"></i><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><i class="fa-fw fas fa-gamepad"></i><span> 游戏</span></a></li><li><a class="site-page child" href="/books/"><i class="fa-fw fas fa-book"></i><span> 书单</span></a></li></ul></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 更多</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/gallery/"><i class="fa-fw fas fa-images"></i><span> 相册</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fas fa-user"></i><span> 关于</span></a></li></ul></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">记学习Moq框架（二）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2019-11-11T15:46:58.000Z" title="发表于 2019-11-11 23:46:58">2019-11-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-10-05T13:49:10.353Z" title="更新于 2025-10-05 21:49:10">2025-10-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/NET/">.NET</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/NET/Moq/">Moq</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">1.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p><a href="../58011e5c/">记学习Moq框架（一）</a>，上一篇简单讲解了用法，这篇深入讲解用法</p>
+<h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title">IProductService</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Add</span>(<span class="params">Product product</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Task <span class="title">AddAsync</span>(<span class="params">Product product</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Delete</span>(<span class="params"><span class="built_in">string</span> id</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Task <span class="title">DeleteAsync</span>(<span class="params"><span class="built_in">string</span> id</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Product <span class="title">Get</span>(<span class="params"><span class="built_in">string</span> id</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Task&lt;Product&gt; <span class="title">GetAsync</span>(<span class="params"><span class="built_in">string</span> id</span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Mock方法调用"><a href="#Mock方法调用" class="headerlink" title="Mock方法调用"></a>Mock方法调用</h2><h3 id="单次方法调用"><a href="#单次方法调用" class="headerlink" title="单次方法调用"></a>单次方法调用</h3><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.Delete(It.IsAny&lt;<span class="built_in">string</span>&gt;()));</span><br></pre></td></tr></table></figure>
+
+<p>同时也支持异步方法</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.DeleteAsync(It.IsAny&lt;<span class="built_in">string</span>&gt;()));</span><br></pre></td></tr></table></figure>
+
+<h3 id="多次方法调用"><a href="#多次方法调用" class="headerlink" title="多次方法调用"></a>多次方法调用</h3><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mock.SetupSequence(p =&gt; p.Get(It.IsAny&lt;<span class="built_in">string</span>&gt;())</span><br><span class="line">    .Returns(<span class="keyword">new</span> Product()&#123;Name = <span class="string">&quot;618狂欢&quot;</span>&#125;)</span><br><span class="line">    .Returns(<span class="keyword">new</span> Product()&#123;Name = <span class="string">&quot;双十一&quot;</span>&#125;)</span><br><span class="line">    .Returns(<span class="keyword">new</span> Product()&#123;Name = <span class="string">&quot;年货节&quot;</span>&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>也可以调用没有返回值的方法<code>void Delete(string id)</code></p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mock.SetupSequence(p =&gt; p.Delete(It.IsAny&lt;<span class="built_in">string</span>&gt;())</span><br><span class="line">    .Pass()</span><br><span class="line">    .Pass()</span><br><span class="line">    .Pass();</span><br></pre></td></tr></table></figure>
+
+<h3 id="序列调用"><a href="#序列调用" class="headerlink" title="序列调用"></a>序列调用</h3><p>由于多个方法按照序列调用，最好采用<code>MockBehavior.Strict</code>严格模式</p>
+<ul>
+<li>同个对象，同个方法</li>
+</ul>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;IProductService&gt;(MockBehavior.Strict);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> sequence = <span class="keyword">new</span> MockSequence();</span><br><span class="line"></span><br><span class="line">mock.InSequence(sequence).Setup(p =&gt; p.Delete(<span class="string">&quot;1&quot;</span>));</span><br><span class="line">mock.InSequence(sequence).Setup(p =&gt; p.Delete(<span class="string">&quot;2&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>同个对象，不同方法</li>
+</ul>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;IProductService&gt;(MockBehavior.Strict);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> sequence = <span class="keyword">new</span> MockSequence();</span><br><span class="line"></span><br><span class="line">mock.InSequence(sequence).Setup(p =&gt; p.DoWithString(It.IsAny&lt;<span class="built_in">string</span>&gt;()));</span><br><span class="line">mock.InSequence(sequence).Setup(p =&gt; p.DoWithInteger(It.IsAny&lt;<span class="built_in">int</span>&gt;()));</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>不同对象</li>
+</ul>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mockFirst = <span class="keyword">new</span> Mock&lt;IProductService&gt;(MockBehavior.Strict);</span><br><span class="line"><span class="keyword">var</span> mockSecond = <span class="keyword">new</span> Mock&lt;IProductRepository&gt;(MockBehavior.Strict);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> sequence = <span class="keyword">new</span> MockSequence();</span><br><span class="line"></span><br><span class="line">mockFirst.InSequence(sequence).Setup(p =&gt; p.Delete(<span class="string">&quot;1&quot;</span>));</span><br><span class="line">mockSecond.InSequence(sequence).Setup(p =&gt; p.Get(<span class="string">&quot;1&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<h2 id="Mock方法参数"><a href="#Mock方法参数" class="headerlink" title="Mock方法参数"></a>Mock方法参数</h2><p>指定对象方法的参数类型</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.Get(It.IsAny&lt;<span class="built_in">string</span>&gt;()));</span><br></pre></td></tr></table></figure>
+
+<p>指定对象方法的参数值</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.Get(<span class="string">&quot;1911112346550025&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>正则表达式匹配<code>It.IsRegex</code></p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.Get(It.IsRegex(<span class="string">&quot;[A-Z_]+&quot;</span>)));</span><br></pre></td></tr></table></figure>
+
+<p>两数区间<code>It.IsInRange</code></p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.GetById(It.IsInRange(<span class="number">0</span>, <span class="number">100</span>, Moq.Range.Exclusive)));</span><br></pre></td></tr></table></figure>
+
+<p>指定返回参数类型的表达式<code>It.Is</code></p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.Get(It.Is&lt;<span class="built_in">string</span>&gt;(s =&gt; s.StartsWith(<span class="string">&quot;19111&quot;</span>))));</span><br></pre></td></tr></table></figure>
+
+<h3 id="ref-参数"><a href="#ref-参数" class="headerlink" title="ref 参数"></a>ref 参数</h3><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.DoSomething(<span class="keyword">ref</span> It.Ref&lt;<span class="built_in">string</span>&gt;.IsAny));</span><br></pre></td></tr></table></figure>
+
+<p>指定引用参数</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> <span class="keyword">value</span> = <span class="string">&quot;This is a test value&quot;</span>;</span><br><span class="line">mock.Setup(p =&gt; p.DoSomething(<span class="keyword">ref</span> <span class="keyword">value</span>));</span><br></pre></td></tr></table></figure>
+
+<p>调用方法后执行回调方法</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="built_in">delegate</span> <span class="keyword">void</span> <span class="title">DoSomethingCallback</span>(<span class="params"><span class="keyword">ref</span> <span class="built_in">string</span> <span class="keyword">value</span></span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> newValue = <span class="string">&quot;This is the new referenced value&quot;</span>;</span><br><span class="line">mock.Setup(p =&gt; p.DoSomething(It.Ref&lt;<span class="built_in">string</span>&gt;.IsAny))</span><br><span class="line">    .Callback(<span class="keyword">new</span> DoSomethingCallback((<span class="keyword">ref</span> <span class="built_in">string</span> <span class="keyword">value</span>) =&gt; <span class="keyword">value</span> = newValue));</span><br></pre></td></tr></table></figure>
+
+<h3 id="out-参数"><a href="#out-参数" class="headerlink" title="out 参数"></a>out 参数</h3><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> <span class="keyword">value</span> = <span class="string">&quot;This is the expected out value&quot;</span>;</span><br><span class="line">mock.Setup(p =&gt; p.DoSomething(<span class="keyword">out</span> <span class="keyword">value</span>));</span><br></pre></td></tr></table></figure>
+
+<h3 id="可选参数"><a href="#可选参数" class="headerlink" title="可选参数"></a>可选参数</h3><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">DoSomething</span>(<span class="params"><span class="built_in">string</span> operation = <span class="string">&quot;DEFAULT_OPERATION&quot;</span></span>)</span> &#123; &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// call with custom value</span></span><br><span class="line">service.DoSomething(<span class="string">&quot;MY_CUSTOM_OPERATION&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// call with default value</span></span><br><span class="line">service.DoSomething();</span><br></pre></td></tr></table></figure>
+
+<p>异步方法调用通常会需要<code>CancellationToken</code>作为入参，给一个默认值<code>default</code>即可</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.DoSomethingAsync(It.IsAny&lt;<span class="built_in">string</span>&gt;(), It.IsAny&lt;CancellationToken&gt;()));</span><br><span class="line">mock.Setup(p =&gt; p.DoSomethingAsync(It.IsAny&lt;<span class="built_in">string</span>&gt;(), <span class="literal">default</span>));</span><br></pre></td></tr></table></figure>
+
+<h2 id="Mock方法返回"><a href="#Mock方法返回" class="headerlink" title="Mock方法返回"></a>Mock方法返回</h2><p>异步方法返回</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.GetValueAsync()).Returns(Task.FromResult(<span class="number">123</span>));</span><br><span class="line">mock.Setup(p =&gt; p.GetValueAsync()).ReturnsAsync(<span class="number">123</span>);</span><br></pre></td></tr></table></figure>
+
+<p>通过委托方法执行返回</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.Add(It.IsAny&lt;<span class="built_in">int</span>&gt;(), It.IsAny&lt;<span class="built_in">int</span>&gt;())</span><br><span class="line">    .Returns((<span class="built_in">int</span> first, <span class="built_in">int</span> second) =&gt; first + second);</span><br><span class="line"></span><br><span class="line">mock.Setup(p =&gt; p.AddAsync(It.IsAny&lt;<span class="built_in">int</span>&gt;(), It.IsAny&lt;<span class="built_in">int</span>&gt;())</span><br><span class="line">    .ReturnsAsync((<span class="built_in">int</span> first, <span class="built_in">int</span> second) =&gt; first + second);</span><br></pre></td></tr></table></figure>
+
+<p>返回null</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;Product&gt;();</span><br><span class="line">mock.Setup(p =&gt; p.Img).Returns(<span class="literal">null</span> <span class="keyword">as</span> <span class="built_in">string</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Mock方法回调"><a href="#Mock方法回调" class="headerlink" title="Mock方法回调"></a>Mock方法回调</h2><p>可以在方法后面链接Callback，来触发自定义的代码</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;IProductService&gt;();</span><br><span class="line">mock.Setup(p =&gt; p.Delete()).Callback(() =&gt; TestContext.Progress.Writeline(<span class="string">&quot;Here&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>无入参的Action</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.Delete(It.IsAny&lt;<span class="built_in">string</span>&gt;())).Callback(() =&gt; TestContext.Progress.Writeline(<span class="string">$&quot;Incoming call&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>也可以带入方法参数</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.Delete(It.IsAny&lt;<span class="built_in">string</span>&gt;())).Callback((<span class="built_in">string</span> id) =&gt; TestContext.Progress.Writeline(<span class="string">$&quot;Incoming call: <span class="subst">&#123;id&#125;</span>&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>属性方法</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;Product&gt;();</span><br><span class="line"></span><br><span class="line">mock.SetupGet(p =&gt; p.Img)</span><br><span class="line">    .Callback(() =&gt; TestContext.Progress.Writeline(<span class="string">&quot;Getter invoked&quot;</span>));</span><br><span class="line"></span><br><span class="line">mock.SetupSet(p =&gt; p.Img = It.IsAny&lt;<span class="built_in">string</span>&gt;())</span><br><span class="line">    .Callback((<span class="built_in">string</span> img) =&gt; TestContext.Progress.Writeline(<span class="string">$&quot;Setter received value: <span class="subst">&#123;img&#125;</span>&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>中途变更状态值</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span> <span class="keyword">value</span> = <span class="built_in">string</span>.Empty;</span><br><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;IProductService&gt;();</span><br><span class="line"></span><br><span class="line">mock.Setup(p =&gt; p.Delete(It.IsAny&lt;<span class="built_in">string</span>&gt;()))</span><br><span class="line">    .Callback((<span class="built_in">string</span> id) =&gt; <span class="keyword">value</span> = id);</span><br></pre></td></tr></table></figure>
+
+<p>特定条件</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">int</span> counter = <span class="number">0</span>;</span><br><span class="line">mock.Setup(p =&gt; p.DoSomething()).Callback(() =&gt; &#123; <span class="keyword">if</span> (counter++ &gt;= <span class="number">5</span>) <span class="keyword">throw</span> <span class="keyword">new</span> Exception(); &#125;);</span><br></pre></td></tr></table></figure>
+
+<p>链接多个委托</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.DoSomething(It.IsAny&lt;<span class="built_in">int</span>&gt;())).Callback((<span class="built_in">int</span> <span class="keyword">value</span>) =&gt; </span><br><span class="line">&#123;</span><br><span class="line">    DoSomething();</span><br><span class="line">    DoSomethingWithValue(<span class="keyword">value</span>)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h3 id="抛出异常"><a href="#抛出异常" class="headerlink" title="抛出异常"></a>抛出异常</h3><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;IProductService&gt;();</span><br><span class="line"></span><br><span class="line">mock.Setup(p =&gt; p.Delete(It.IsAny&lt;<span class="built_in">string</span>&gt;()))</span><br><span class="line">    .Callback(() =&gt; <span class="keyword">throw</span> <span class="keyword">new</span> Exception());</span><br></pre></td></tr></table></figure>
+
+<p><code>Throws</code>语法糖</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.Delete(It.IsAny&lt;<span class="built_in">string</span>&gt;()))</span><br><span class="line">    .Throws(<span class="keyword">new</span> Exception(<span class="string">&quot;My custom exception&quot;</span>));</span><br><span class="line"></span><br><span class="line">mock.Setup(p =&gt; p.Delete(It.IsAny&lt;<span class="built_in">string</span>&gt;()))</span><br><span class="line">    .ThrowsAsync(<span class="keyword">new</span> Exception(<span class="string">&quot;My custom exception&quot;</span>));  </span><br><span class="line"><span class="comment">//简写</span></span><br><span class="line">mock.Setup(p =&gt; p.Delete((It.IsAny&lt;<span class="built_in">string</span>&gt;()))</span><br><span class="line">    .Throws&lt;Exception&gt;();</span><br></pre></td></tr></table></figure>
+
+<p>序列调用</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mock.SetupSequence(p =&gt; p.GetSomeValue())</span><br><span class="line">    .Returns(<span class="number">1</span>)</span><br><span class="line">    .Throws&lt;Exception&gt;();</span><br><span class="line"></span><br><span class="line">mock.SetupSequence(p =&gt; p.GetSomeValueAsync())</span><br><span class="line">    .ReturnsAsync(<span class="number">1</span>)</span><br><span class="line">    .ThrowsAsync(<span class="keyword">new</span> Exception());</span><br></pre></td></tr></table></figure>
+
+<h2 id="Mock对象属性"><a href="#Mock对象属性" class="headerlink" title="Mock对象属性"></a>Mock对象属性</h2><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;Product&gt;();</span><br><span class="line">mock.Setup(p =&gt; p.Id).Returns(<span class="string">&quot;1&quot;</span>);</span><br><span class="line">mock.Setup(p =&gt; p.Name).Returns(<span class="string">&quot;Bar&quot;</span>);</span><br><span class="line">mock.Setup(p =&gt; p.Img).Returns(<span class="string">&quot;xxx&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>也可以对属性的Get、Set方法</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mock.SetupGet(p =&gt; p.Name) ... ;</span><br><span class="line">mock.SetupSet(p =&gt; p.Name = It.IsAny&lt;<span class="built_in">string</span>&gt;()) ... ;</span><br></pre></td></tr></table></figure>
+
+<p>属性链返回值</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;HttpContextBase&gt;();</span><br><span class="line">mock.SetupGet(p =&gt; p.Response.Request.UserAgent).Returns(<span class="string">&quot;My Browser&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Mock检查"><a href="#Mock检查" class="headerlink" title="Mock检查"></a>Mock检查</h2><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.Delete(It.IsAny&lt;<span class="built_in">string</span>&gt;())).Verifiable();</span><br></pre></td></tr></table></figure>
+
+<p>全部检查</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.VerifyAll();</span><br></pre></td></tr></table></figure>
+
+<p>自定义检查失败消息</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mock.Setup(p =&gt; p.Send(It.IsAny&lt;<span class="built_in">string</span>&gt;())).Verifiable(<span class="string">&quot;Send was never invoked&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>自选检查mock</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Mock.Verify(mock, anotherMock, yetAnotherMock);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Mock仓库"><a href="#Mock仓库" class="headerlink" title="Mock仓库"></a>Mock仓库</h2><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mockRepository = <span class="keyword">new</span> MockRepository(MockBehavior.Strict) &#123; DefaultValue = DefaultValue.Mock &#125;;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _repository = repository.Create&lt;IProductRepository&gt;();</span><br><span class="line"><span class="keyword">var</span> _service = repository.Create&lt;IProductService&gt;(MockBehavior.Loose);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Mock深层对象"><a href="#Mock深层对象" class="headerlink" title="Mock深层对象"></a>Mock深层对象</h2><p>有时候想直接获得深层对象的mock，<code>Mock.Get</code>对象属性这种方法非常有用</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mock = Mock.Get(logger);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 例子</span></span><br><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;HttpContextBase&gt;();</span><br><span class="line"><span class="keyword">var</span> context = mock.Object;</span><br><span class="line"><span class="keyword">var</span> request = Mock.Get(context.Request);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Mock自定义"><a href="#Mock自定义" class="headerlink" title="Mock自定义"></a>Mock自定义</h2><p>默认空</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;IProductService&gt; &#123; DefaultValue = DefaultValue.Empty &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>模拟数据</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;IProductService&gt; &#123; DefaultValue = DefaultValue.Mock &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>自定义默认值提供器</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">MyCustomDefaultValueProvider</span> : <span class="title">DefaultValueProvider</span> &#123; ... &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> mock = <span class="keyword">new</span> Mock&lt;IProductService&gt; &#123; DefaultValueProvider = <span class="keyword">new</span> MyCustomDefaultValueProvider() &#125;;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://blog.chobon.top">二博</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://blog.chobon.top/posts/6817f284/">https://blog.chobon.top/posts/6817f284/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://blog.chobon.top" target="_blank">二博</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/NET/">.NET</a><a class="post-meta__tags" href="/tags/Moq/">Moq</a></div><div class="post-share"><div class="social-share" data-image="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.staticfile.org/butterfly-extsrc/1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.staticfile.org/butterfly-extsrc/1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i>赞助</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://img.chobon.top/blog/img/wechat.png" target="_blank"><img class="post-qr-code-img" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/wechat.png" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://img.chobon.top/blog/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/alipay.jpg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/posts/58011e5c/" title="记学习Moq框架（一）"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">记学习Moq框架（一）</div></div><div class="info-2"><div class="info-item-1">前言Moq（英语发音是Mock-you 或者只是mock）是一个针对.Net开发的模拟库，它从开始就完全充分利用了.NET3.5（LINQ表达式树）和C#3.0的新特性（lambda表达式）。它的目标是让模拟以一种自然的方式与现有单元测试进行集成，使它更加简单、直观，以避免开发人员被迫重写测试或高成本的学习测试框架。这使它成为了一个高生产力、类型安全、重构友好的模拟库。 应用场景现在越来越多分层架构使用依赖注入的方式来解耦层与层之间的关系，最为常见的就是业务层和数据层之间的依赖注入，业务层不再强依赖数据层对象，而是依赖数据层对象的接口，在IOC容器里面完成依赖的配置。这种解耦给单元测试带来了极大的便利，使得对业务逻辑的测试可以脱离对数据层的依赖,单元测试的粒度更小,更容易排查出问题所在。  开始Moq安装MoqMoq安装非常简单,在Nuget里面搜索moq,第一个结果便是moq框架,点击安装即可。 示例 数据层  12345678public interface IProductRepository&#123;    void Add(Product product);   ...</div></div></div></a><a class="pagination-related" href="/posts/4bd56b6f/" title="Win10换CentOS7"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-48960.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Win10换CentOS7</div></div><div class="info-2"><div class="info-item-1">前言双十一组了台ITX，于是想把闲置的笔记本换成centos7作为服务器 准备工作下载centos镜像打开CentOS官网地址 ，选择aliyun的http://mirrors.aliyun.com/centos/7.7.1908/isos/x86_64/下载网速会好一些，然后选择CentOS-7-x86_64-DVD-1908.iso镜像 制作U盘PE这里选择老牌的PE老毛桃   坑1： [Firmware Bug]: TSC_DEADLINE disabled due to Errata; please update microcode to...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/posts/58011e5c/" title="记学习Moq框架（一）"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2019-11-11</div><div class="info-item-2">记学习Moq框架（一）</div></div><div class="info-2"><div class="info-item-1">前言Moq（英语发音是Mock-you 或者只是mock）是一个针对.Net开发的模拟库，它从开始就完全充分利用了.NET3.5（LINQ表达式树）和C#3.0的新特性（lambda表达式）。它的目标是让模拟以一种自然的方式与现有单元测试进行集成，使它更加简单、直观，以避免开发人员被迫重写测试或高成本的学习测试框架。这使它成为了一个高生产力、类型安全、重构友好的模拟库。 应用场景现在越来越多分层架构使用依赖注入的方式来解耦层与层之间的关系，最为常见的就是业务层和数据层之间的依赖注入，业务层不再强依赖数据层对象，而是依赖数据层对象的接口，在IOC容器里面完成依赖的配置。这种解耦给单元测试带来了极大的便利，使得对业务逻辑的测试可以脱离对数据层的依赖,单元测试的粒度更小,更容易排查出问题所在。  开始Moq安装MoqMoq安装非常简单,在Nuget里面搜索moq,第一个结果便是moq框架,点击安装即可。 示例 数据层  12345678public interface IProductRepository&#123;    void Add(Product product);   ...</div></div></div></a><a class="pagination-related" href="/posts/226186c6/" title="ASP.NET Core MVC 5.x初始化源码解读（一）"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-01</div><div class="info-item-2">ASP.NET Core MVC 5.x初始化源码解读（一）</div></div><div class="info-2"><div class="info-item-1">前言初始化比较复杂，文章拆分成3部分Host、WebHost、Startup，逐一分析 对象概念解释 接口定义   IHost : 主机抽象  IServiceProvider : 对象服务提供器 StartAsync : 启动方法 StopAsync : 停止方法   IHostBuilder : 主机构造器抽象  ConfigureHostConfiguration() : 配置主机配置文件 ConfigureAppConfiguration() : 配置应用配置文件 ConfigureServices() : 配置服务 UseServiceProviderFactory() : 配置服务提供商工厂 ConfigureContainer() : 配置容器 Build() : 构造主机     具体实现   Host : 主机  IHostLifetime : 主机生命周期 IServiceProvider : 服务提供商 ApplicationLifetime : 应用生命周期 HostOptions :...</div></div></div></a><a class="pagination-related" href="/posts/329c39bd/" title="ASP.NET Core MVC 5.x初始化源码解读（二）"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-48960.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-11-01</div><div class="info-item-2">ASP.NET Core MVC 5.x初始化源码解读（二）</div></div><div class="info-2"><div class="info-item-1">WebHost对象概念解释WebHost  接口定义   IWebHost : 主机抽象  IFeatureCollection : 插件容器 IServiceProvider : 对象服务提供器 Start : 启动方法（同步） StartAsync : 启动方法 StopAsync : 停止方法   IWebHostBuilder : 网站主机构建器  Build : 构建 ConfigureAppConfiguration : 配置应用配置文件 ConfigureServices : 配置服务 GetSetting : 读取单个配置值 UseSetting : 设置单个配置项     具体实现   GenericWebHostBuilder : 通用网站主机构造器（HostBuilder桥接器）  ConfigureHostConfiguration : 设置主机配置 ConfigureAppConfiguration : 设置应用配置 ConfigureServices : 设置服务 UseStartup :...</div></div></div></a><a class="pagination-related" href="/posts/c29cb869/" title="ASP.NET Core MVC 源码解读-应用程序模型"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-48960.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-04-16</div><div class="info-item-2">ASP.NET Core MVC 源码解读-应用程序模型</div></div><div class="info-2"><div class="info-item-1">概念ASP.NET Core MVC 会定义一个 应用程序模型，用于表示 MVC 应用的各个组件。 读取并处理此模型，以修改 MVC 元素的行为方式。 默认情况下，MVC 遵循特定的约定来确定哪些类被视为控制器、这些类上的哪些方法是操作以及参数和路由的行为方式。 自定义此行为以满足应用程序的需求，方法是创建自定义约定，并将其作为全局或特性应用。 模型(Model)和程序提供器(Provider) 对象模型(Model)  ASP.NET Core MVC 应用程序模型包括用于描述 MVC 应用程序的抽象接口和具体实现类。 此模型是 MVC 根据默认约定发现应用的控制器、操作、操作参数、路由和筛选器的结果。 通过使用应用程序模型，修改应用以遵循默认 MVC 行为中的不同约定。 参数、名称、路由和筛选器都用作操作和控制器的配置数据。ASP.NET Core MVC 应用程序模型具有以下结构：  ApplicationModel 控制器 (ControllerModel) 属性 (PropertyModel)   操作 (ActionModel) 参数...</div></div></div></a><a class="pagination-related" href="/posts/585b74ea/" title="Abp vNext源码分析-功能模块和权限模块"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2020-08-04</div><div class="info-item-2">Abp vNext源码分析-功能模块和权限模块</div></div><div class="info-2"><div class="info-item-1">功能模块功能管理-FeatureManagement是在多租户应用程序中使用，检查定义的功能是否对当前租户有效，功能是否启用。Abp系统功能定义，类似于权限功能一种延伸。  FeatureDefinition : 功能定义  FeatureGroupDefinition : 功能组定义  FeatureValue : 功能值，记录功能是否可用  IFeatureValueProvider : 功能值提供器，负责检查功能是否可用。   一般会结合功能存储IFeatureStore使用 12345678910111213public abstract class FeatureValueProvider : IFeatureValueProvider, ITransientDependency&#123;    public abstract string Name &#123; get; &#125;    protected IFeatureStore FeatureStore &#123; get; &#125;    protected...</div></div></div></a><a class="pagination-related" href="/posts/c507985c/" title="Abp vNext源码分析-多租户模块"><img class="cover" src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2020-08-06</div><div class="info-item-2">Abp vNext源码分析-多租户模块</div></div><div class="info-2"><div class="info-item-1">多租户抽象租户对象 ICurrentTenant : 当前租户 ICurrentTenantAccessor : 当前租户访问器 BasicTenantInfo : 租户实际对象  租户存储ITenantStore是多租户抽象数据源，可以实现ITenantStore，存储租户数据源  ITenantStore : 多租户存储   存储接口  12345678910public interface ITenantStore&#123;    Task&lt;TenantConfiguration&gt; FindAsync(string name);    Task&lt;TenantConfiguration&gt; FindAsync(Guid id);    TenantConfiguration Find(string name);    TenantConfiguration Find(Guid id);&#125;  配置数据存储默认从配置文件中读取信息作为多租户存储  DefaultTenantStore :...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/img/avatar.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">二博</div><div class="author-info-description">生活不止有工作</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">75</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">30</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/chobon8"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/chobon8" target="_blank" title="Github"><i class="fa-brands fa-github"></i></a><a class="social-icon" href="mailto:chobon@aliyun.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="/atom.xml" target="_blank" title="RSS"><i class="fas fa-rss"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">应用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B"><span class="toc-number">2.</span> <span class="toc-text">示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mock%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8"><span class="toc-number">3.</span> <span class="toc-text">Mock方法调用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E6%AC%A1%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8"><span class="toc-number">3.1.</span> <span class="toc-text">单次方法调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E6%AC%A1%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8"><span class="toc-number">3.2.</span> <span class="toc-text">多次方法调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%8F%E5%88%97%E8%B0%83%E7%94%A8"><span class="toc-number">3.3.</span> <span class="toc-text">序列调用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mock%E6%96%B9%E6%B3%95%E5%8F%82%E6%95%B0"><span class="toc-number">4.</span> <span class="toc-text">Mock方法参数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ref-%E5%8F%82%E6%95%B0"><span class="toc-number">4.1.</span> <span class="toc-text">ref 参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#out-%E5%8F%82%E6%95%B0"><span class="toc-number">4.2.</span> <span class="toc-text">out 参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AF%E9%80%89%E5%8F%82%E6%95%B0"><span class="toc-number">4.3.</span> <span class="toc-text">可选参数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mock%E6%96%B9%E6%B3%95%E8%BF%94%E5%9B%9E"><span class="toc-number">5.</span> <span class="toc-text">Mock方法返回</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mock%E6%96%B9%E6%B3%95%E5%9B%9E%E8%B0%83"><span class="toc-number">6.</span> <span class="toc-text">Mock方法回调</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%9B%E5%87%BA%E5%BC%82%E5%B8%B8"><span class="toc-number">6.1.</span> <span class="toc-text">抛出异常</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mock%E5%AF%B9%E8%B1%A1%E5%B1%9E%E6%80%A7"><span class="toc-number">7.</span> <span class="toc-text">Mock对象属性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mock%E6%A3%80%E6%9F%A5"><span class="toc-number">8.</span> <span class="toc-text">Mock检查</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mock%E4%BB%93%E5%BA%93"><span class="toc-number">9.</span> <span class="toc-text">Mock仓库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mock%E6%B7%B1%E5%B1%82%E5%AF%B9%E8%B1%A1"><span class="toc-number">10.</span> <span class="toc-text">Mock深层对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mock%E8%87%AA%E5%AE%9A%E4%B9%89"><span class="toc-number">11.</span> <span class="toc-text">Mock自定义</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/705c9884/" title="Linux磁盘坏道检测和修复"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-125399.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux磁盘坏道检测和修复"/></a><div class="content"><a class="title" href="/posts/705c9884/" title="Linux磁盘坏道检测和修复">Linux磁盘坏道检测和修复</a><time datetime="2025-10-05T12:46:58.000Z" title="发表于 2025-10-05 20:46:58">2025-10-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/dfeb25f1/" title="Proxmox上LXC磁盘缩小"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-48960.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Proxmox上LXC磁盘缩小"/></a><div class="content"><a class="title" href="/posts/dfeb25f1/" title="Proxmox上LXC磁盘缩小">Proxmox上LXC磁盘缩小</a><time datetime="2024-05-15T11:46:58.000Z" title="发表于 2024-05-15 19:46:58">2024-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/a594add/" title="RKE搭建Kubernetes集群环境"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-200244.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RKE搭建Kubernetes集群环境"/></a><div class="content"><a class="title" href="/posts/a594add/" title="RKE搭建Kubernetes集群环境">RKE搭建Kubernetes集群环境</a><time datetime="2022-03-08T14:22:08.000Z" title="发表于 2022-03-08 22:22:08">2022-03-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/bc681fc7/" title="Ubuntu安装Docker"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/Docker_Logo.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Ubuntu安装Docker"/></a><div class="content"><a class="title" href="/posts/bc681fc7/" title="Ubuntu安装Docker">Ubuntu安装Docker</a><time datetime="2021-12-02T15:07:41.000Z" title="发表于 2021-12-02 23:07:41">2021-12-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/da975915/" title="V2ray更新gRPC"><img src= "https://img.chobon.top/blog/img/loading.gif" data-lazy-src="https://img.chobon.top/blog/cover/wallpaper-3032044.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="V2ray更新gRPC"/></a><div class="content"><a class="title" href="/posts/da975915/" title="V2ray更新gRPC">V2ray更新gRPC</a><time datetime="2021-11-30T10:15:45.000Z" title="发表于 2021-11-30 18:15:45">2021-11-30</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2025 By 二博</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.3.3</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="/"></script><script src="https://cdn.staticfile.org/instant.page/5.2.0/instantpage.min.js" type="module"></script><script src="https://cdn.staticfile.org/vanilla-lazyload/19.1.3/lazyload.iife.min.js"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.staticfile.org/KaTeX/0.16.21/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.staticfile.org/KaTeX/0.16.21/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = `%%{init:{ 'theme':'${theme}'}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.staticfile.org/mermaid/11.4.1/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"data-mapping":"pathname","data-strict":1,"data-reactions-enabled":1,"data-emit-metadata":1,"data-input-position":"top","data-lang":"zh-CN","data-loading":"lazy","crossorigin":"anonymous"}
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'chobon8/chobon8.github.io',
+      'data-repo-id': 'MDEwOlJlcG9zaXRvcnkyMTk3ODU1Njk=',
+      'data-category-id': 'DIC_kwDODRmpYc4CR2Ca',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !true) {
+    if (true) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><div class="aplayer no-destroy" data-id="2201879658" data-server="netease" data-type="playlist" data-fixed="true" data-autoplay="true"></div><link rel="stylesheet" href="https://cdn.staticfile.org/aplayer/1.10.1/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.staticfile.org/aplayer/1.10.1/APlayer.min.js"></script><script src="https://cdn.staticfile.org/butterfly-extsrc/1.1.4/metingjs/dist/Meting.min.js"></script><script>(() => {
+  const destroyAplayer = () => {
+    if (window.aplayers) {
+      for (let i = 0; i < window.aplayers.length; i++) {
+        if (!window.aplayers[i].options.fixed) {
+          window.aplayers[i].destroy()
+        }
+      }
+    }
+  }
+
+  const runMetingJS = () => {
+    typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+  }
+
+  btf.addGlobalFn('pjaxSend', destroyAplayer, 'destroyAplayer')
+  btf.addGlobalFn('pjaxComplete', loadMeting, 'runMetingJS')
+})()</script><script src="https://cdn.staticfile.org/pjax/0.2.8/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
